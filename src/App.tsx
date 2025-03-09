@@ -1,27 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import './App.css'
 import { GameState } from './models/GameState';
 import { getGameState, saveGameState } from './GameStateRepository';
+import { SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
+import { GameSideBar } from './components/game/gameSideBar';
+import World from './components/game/world';
 
 function App() {
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<GameState | undefined>(undefined);
   const frameRate = useRef<number>(2);
   const nextFrameTime = useRef<number>(0);
 
   const runGameLoop = useCallback(() => {
     console.log("Game Loop");
-
-    const canvas = canvasRef.current;
-    if(!canvas){
-      return;
-    }
-
-    const context = canvas.getContext('2d');
-    if(!context){
-      return;
-    }
 
     setGameState((gameState) => {
       let currentGameState: GameState | undefined = undefined;
@@ -35,15 +26,10 @@ function App() {
       
       currentGameState.currentTick += 1;
 
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.font = "48px serif";
-      context.fillText(`${currentGameState.currentTick}`, 10, 50);
-
       saveGameState(currentGameState);
-
       return currentGameState;
     });
-  }, [gameState, canvasRef]);
+  }, [gameState]);
 
 
   useEffect(() => {
@@ -66,20 +52,13 @@ function App() {
 
   return (
     <>
-      <canvas 
-      id="canvas" 
-      ref={canvasRef} 
-      width={1080} 
-      height={1080}
-      style={{
-        backgroundColor: 'green',
-        display: 'block',
-        margin: '0 auto',
-        width: '100%',
-        maxWidth: '1080px',
-        height: 'auto'
-      }}
-      />
+      <SidebarProvider>
+        <GameSideBar />
+        <main>
+          <SidebarTrigger />
+          {gameState && <World gameState={gameState} />}
+        </main>
+      </SidebarProvider>
     </>
   )
 }
