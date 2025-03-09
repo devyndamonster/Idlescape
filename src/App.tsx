@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { GameState } from './models/GameState';
-import { getGameState } from './GameStateRepository';
+import { getGameState, saveGameState } from './GameStateRepository';
 
 function App() {
 
@@ -38,6 +38,8 @@ function App() {
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.font = "48px serif";
       context.fillText(`${currentGameState.currentTick}`, 10, 50);
+
+      saveGameState(currentGameState);
 
       return currentGameState;
     });
