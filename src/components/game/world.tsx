@@ -13,8 +13,6 @@ export default function World({ gameState }: Props)
     const nextFrameTime = useRef<number>(0);
 
     const runGameLoop = useCallback(() => {
-        console.log("Render loop");
-
         const canvas = canvasRef.current;
         if(!canvas){
             return;
@@ -56,15 +54,14 @@ export default function World({ gameState }: Props)
         <canvas 
             id="canvas" 
             ref={canvasRef} 
-            width={1080} 
-            height={1080}
+            width={1000} 
+            height={1000}
             style={{
                 backgroundColor: 'green',
                 display: 'block',
                 margin: '0 auto',
-                width: '100%',
-                maxWidth: '1080px',
-                height: 'auto'
+                width: '1000px',
+                height: '1000px'
             }}
         />
     )

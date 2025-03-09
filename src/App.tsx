@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { GameState } from './models/GameState';
 import { getGameState, saveGameState } from './GameStateRepository';
-import { SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
 import { GameSideBar } from './components/game/gameSideBar';
 import World from './components/game/world';
+import ScrollableMap from './components/game/scrollableMap';
 
 function App() {
 
@@ -12,8 +13,6 @@ function App() {
   const nextFrameTime = useRef<number>(0);
 
   const runGameLoop = useCallback(() => {
-    console.log("Game Loop");
-
     setGameState((gameState) => {
       let currentGameState: GameState | undefined = undefined;
 
@@ -30,7 +29,6 @@ function App() {
       return currentGameState;
     });
   }, [gameState]);
-
 
   useEffect(() => {
     let frameId: number;
@@ -54,10 +52,12 @@ function App() {
     <>
       <SidebarProvider>
         <GameSideBar />
-        <main>
-          <SidebarTrigger />
-          {gameState && <World gameState={gameState} />}
-        </main>
+        <SidebarInset style={{overflow: 'hidden'}}>
+          {gameState && <ScrollableMap gameState={gameState} />}
+          <div style={{ position: 'absolute', top: 0, left: 0 }}>
+            <SidebarTrigger/>
+          </div>
+        </SidebarInset>
       </SidebarProvider>
     </>
   )
