@@ -1,33 +1,83 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
+import { GameState } from './models/GameState';
+import { getGameState } from './GameStateRepository';
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [gameState, setGameState] = useState<GameState | undefined>(undefined);
+  const frameRate = useRef<number>(2);
+  const nextFrameTime = useRef<number>(0);
+
+  const runGameLoop = useCallback(() => {
+    console.log("Game Loop");
+
+    const canvas = canvasRef.current;
+    if(!canvas){
+      return;
+    }
+
+    const context = canvas.getContext('2d');
+    if(!context){
+      return;
+    }
+
+    setGameState((gameState) => {
+      let currentGameState: GameState | undefined = undefined;
+
+      if(!gameState){
+        currentGameState = {...getGameState()};
+      }
+      else{
+        currentGameState = {...gameState};
+      }
+      
+      currentGameState.currentTick += 1;
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.font = "48px serif";
+      context.fillText(`${currentGameState.currentTick}`, 10, 50);
+
+      return currentGameState;
+    });
+  }, [gameState, canvasRef]);
+
+
+  useEffect(() => {
+    let frameId: number;
+
+    const frame = () => {
+      frameId = requestAnimationFrame(frame);
+
+      if(nextFrameTime.current < Date.now()){
+        const updatedNextFrameTime = Date.now() + (1000 / frameRate.current);
+        nextFrameTime.current = updatedNextFrameTime;
+        runGameLoop();
+      }
+    }
+
+    requestAnimationFrame(frame);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [runGameLoop]);
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <canvas 
+      id="canvas" 
+      ref={canvasRef} 
+      width={1080} 
+      height={1080}
+      style={{
+        backgroundColor: 'green',
+        display: 'block',
+        margin: '0 auto',
+        width: '100%',
+        maxWidth: '1080px',
+        height: 'auto'
+      }}
+      />
     </>
   )
 }
