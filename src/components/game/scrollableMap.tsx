@@ -14,25 +14,23 @@ export default function ScrollableMap({gameState}: Props) {
     const startDragMouseY = useRef(0);
     const startDragPositionX = useRef(0);
     const startDragPositionY = useRef(0);
-    const isDragging = useRef(false);
+    const activeDragPointerId = useRef<number | null>(null);
 
-    const onStartDrag = (event: React.MouseEvent<HTMLDivElement>) => {
-        if(!isDragging.current){
-
-            isDragging.current = true;
+    const onStartDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+        if(!activeDragPointerId.current){
+            activeDragPointerId.current = event.pointerId;
             startDragMouseX.current = event.clientX;
             startDragMouseY.current = event.clientY;
             startDragPositionX.current = positionX;
             startDragPositionY.current = positionY;
 
-            document.addEventListener('mousemove', onDrag);
-            document.addEventListener('mouseup', onStopDrag);
+            document.addEventListener('pointermove', onDrag);
+            document.addEventListener('pointerup', onStopDrag);
         }
     }
 
-    const onDrag = (event: MouseEvent) => {
-        if(isDragging){
-
+    const onDrag = (event: PointerEvent) => {
+        if(activeDragPointerId.current === event.pointerId){
             const mouseDeltaX = event.clientX - startDragMouseX.current;
             const mouseDeltaY = event.clientY - startDragMouseY.current;
             setPositionX(startDragPositionX.current + mouseDeltaX);
@@ -40,12 +38,11 @@ export default function ScrollableMap({gameState}: Props) {
         }
     }
 
-    const onStopDrag = () => {
-        if(isDragging){
-
-            isDragging.current = false
-            document.removeEventListener('mousemove', onDrag);
-            document.removeEventListener('mouseup', onStopDrag);
+    const onStopDrag = (event: PointerEvent) => {
+        if(activeDragPointerId.current === event.pointerId){
+            activeDragPointerId.current = null;
+            document.removeEventListener('pointermove', onDrag);
+            document.removeEventListener('pointerup', onStopDrag);
         }
     }
 
@@ -54,7 +51,10 @@ export default function ScrollableMap({gameState}: Props) {
             <div style={{position: 'absolute', top: positionY, left: positionX}}>
                 <World gameState={gameState} />
             </div>
-            <div onMouseDown={onStartDrag} style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}/>
+            <div 
+                onPointerDown={onStartDrag} 
+                style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, touchAction: 'none' }}
+            />
         </div>
     )
 }

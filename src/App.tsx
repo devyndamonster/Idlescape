@@ -3,7 +3,6 @@ import { GameState } from './models/GameState';
 import { getGameState, saveGameState } from './GameStateRepository';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
 import { GameSideBar } from './components/game/gameSideBar';
-import World from './components/game/world';
 import ScrollableMap from './components/game/scrollableMap';
 
 function App() {
