@@ -4,9 +4,10 @@ import { useRef, useState } from "react";
 
 interface Props {
     gameState: GameState;
+    onClickMap?: (x: number, y: number) => void;
 }
 
-export default function ScrollableMap({gameState}: Props) {
+export default function ScrollableMap({gameState, onClickMap}: Props) {
 
     const [positionX, setPositionX] = useState(0);
     const [positionY, setPositionY] = useState(0);
@@ -15,9 +16,12 @@ export default function ScrollableMap({gameState}: Props) {
     const startDragPositionX = useRef(0);
     const startDragPositionY = useRef(0);
     const activeDragPointerId = useRef<number | null>(null);
+    const pointerContainer = useRef<HTMLDivElement>(null);
+
+    const pointerClickDistanceThreshold = 5;
 
     const onStartDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-        if(!activeDragPointerId.current){
+        if(pointerContainer.current && !activeDragPointerId.current){
             activeDragPointerId.current = event.pointerId;
             startDragMouseX.current = event.clientX;
             startDragMouseY.current = event.clientY;
@@ -43,6 +47,25 @@ export default function ScrollableMap({gameState}: Props) {
             activeDragPointerId.current = null;
             document.removeEventListener('pointermove', onDrag);
             document.removeEventListener('pointerup', onStopDrag);
+
+            const mouseDeltaX = event.clientX - startDragMouseX.current;
+            const mouseDeltaY = event.clientY - startDragMouseY.current;
+
+            if(Math.abs(mouseDeltaX) < pointerClickDistanceThreshold && Math.abs(mouseDeltaY) < pointerClickDistanceThreshold){
+                tryHandleClick(event);
+            }
+        }
+    }
+
+    const tryHandleClick = (event: PointerEvent) => {
+        const boundingRect = pointerContainer.current?.getBoundingClientRect();
+        if(boundingRect){
+            const relativePointerX = event.clientX - boundingRect.left;
+            const relativePointerY = event.clientY - boundingRect.top;
+            const worldClickX = relativePointerX - positionX;
+            const worldClickY = relativePointerY - positionY;
+
+            onClickMap?.(worldClickX, worldClickY);
         }
     }
 
@@ -52,6 +75,7 @@ export default function ScrollableMap({gameState}: Props) {
                 <World gameState={gameState} />
             </div>
             <div 
+                ref={pointerContainer}
                 onPointerDown={onStartDrag} 
                 style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, touchAction: 'none' }}
             />
