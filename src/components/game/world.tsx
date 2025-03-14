@@ -26,6 +26,11 @@ export default function World({ gameState }: Props)
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.font = "48px serif";
         context.fillText(`${gameStateSnapshot.current.currentTick}`, 10, 50);
+
+        gameStateSnapshot.current.actors.forEach(actor => {
+            context.fillRect(actor.locationX, actor.locationY, 10, 10);
+        });
+        
     }, [canvasRef]);
 
     useEffect(() => {

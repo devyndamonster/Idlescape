@@ -1,7 +1,11 @@
 import { Settings } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 
-export function GameSideBar() {
+interface Props {
+    onResetWorld: () => void;
+}
+
+export function GameSideBar({onResetWorld}: Props) {
     return (
         <Sidebar>
             <SidebarContent>
@@ -15,6 +19,11 @@ export function GameSideBar() {
                                         <Settings />
                                         <span>Settings</span>
                                     </a>
+                                </SidebarMenuButton>
+                                <SidebarMenuButton onClick={onResetWorld} asChild>
+                                    <span>
+                                        <Settings /> Reset World
+                                    </span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>

@@ -13,6 +13,11 @@ export function getGameState(): GameState {
     };
 }
 
-export function saveGameState(gameState: GameState) {
-    localStorage.setItem("gameState", JSON.stringify(gameState));
+export function saveGameState(gameState: GameState | null) {
+    if(!gameState){
+        localStorage.removeItem("gameState");
+    }
+    else{
+        localStorage.setItem("gameState", JSON.stringify(gameState));
+    }
 }
