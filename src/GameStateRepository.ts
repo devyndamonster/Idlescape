@@ -24,7 +24,7 @@ export function saveGameState(gameState: GameState | null) {
     }
 }
 
-function gameStateReplacer(key: string, value: any) {
+function gameStateReplacer(_: string, value: any) {
     if(value instanceof Vector2){
         return {
             x: value.x,
@@ -36,7 +36,7 @@ function gameStateReplacer(key: string, value: any) {
     return value;
 }
 
-function gameStateReviver(key: string, value: any) {
+function gameStateReviver(_: string, value: any) {
     if(value.serializedType === "Vector2"){
         return new Vector2(value.x, value.y);
     }

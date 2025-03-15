@@ -7,8 +7,6 @@ import ScrollableMap from './components/game/scrollableMap';
 import { Objective } from './enums/Objective';
 import { Vector2 } from 'three';
 import { getActorAction } from './game/ActorLogic';
-import { Actor } from './models/Actor';
-import { ActorAction } from './models/ActorAction';
 import { ActionType } from './enums/ActionType';
 import { ResourceType } from './enums/ResourceType';
 
