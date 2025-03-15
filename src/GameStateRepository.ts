@@ -10,7 +10,8 @@ export function getGameState(): GameState {
 
     return {
         currentTick: 0,
-        actors: []
+        actors: [],
+        resources: [],
     };
 }
 

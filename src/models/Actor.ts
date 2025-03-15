@@ -5,4 +5,6 @@ import { WorldEntity } from "./WorldEntity";
 export interface Actor extends WorldEntity {
     inventory: InventoryItem[];
     currentObjective: Objective;
+    moveSpeed: number;
+    harvestProgress: number;
 }

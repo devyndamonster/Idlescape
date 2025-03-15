@@ -9,7 +9,7 @@ export default function World({ gameState }: Props)
 {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameStateSnapshot = useRef<GameState>(gameState);
-    const drawFramesPerSecond = useRef<number>(4);
+    const drawFramesPerSecond = useRef<number>(30);
     const nextFrameTime = useRef<number>(0);
     const actorSize = 20;
 
@@ -34,6 +34,10 @@ export default function World({ gameState }: Props)
         context.font = `${actorSize}px serif`;
         gameStateSnapshot.current.actors.forEach(actor => {
             context.fillText('🙂', actor.location.x, actor.location.y);
+        });
+
+        gameStateSnapshot.current.resources.forEach(resource => {
+            context.fillText('🪵', resource.location.x, resource.location.y);
         });
         
     }, [canvasRef]);

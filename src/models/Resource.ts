@@ -4,4 +4,6 @@ import { WorldEntity } from "./WorldEntity";
 export interface Resource extends WorldEntity {
     resourceType: ResourceType;
     quantityRemaining: number;
+    collectionRadius: number;
+    harvestTime: number;
 }

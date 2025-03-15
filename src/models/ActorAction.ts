@@ -1,4 +1,6 @@
 import { ActionType } from "@/enums/ActionType";
+import { Resource } from "./Resource";
+import { Vector2 } from "three";
 
 export type ActorAction = 
     IdleAction |    
@@ -11,8 +13,10 @@ export type IdleAction = {
 
 export type MoveAction = {
     actionType: ActionType.Move;
+    direction: Vector2;
 }
 
 export type CollectAction = {
     actionType: ActionType.Collect;
+    targetResource: Resource;
 }
