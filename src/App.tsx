@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/s
 import { GameSideBar } from './components/game/gameSideBar';
 import ScrollableMap from './components/game/scrollableMap';
 import { Objective } from './enums/Objective';
+import { Vector2 } from 'three';
 
 function App() {
 
@@ -25,6 +26,10 @@ function App() {
       
       currentGameState.currentTick += 1;
 
+      for(const actor of currentGameState.actors){
+        
+      }
+
       saveGameState(currentGameState);
       return currentGameState;
     });
@@ -37,8 +42,8 @@ function App() {
         actors: [
           ...gameState.actors,
           {
-            locationX: x,
-            locationY: y,
+            location: new Vector2(x, y),
+            uuid: crypto.randomUUID(),
             inventory: [],
             currentObjective: Objective.CollectSticks
           }

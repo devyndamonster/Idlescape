@@ -11,6 +11,7 @@ export default function World({ gameState }: Props)
     const gameStateSnapshot = useRef<GameState>(gameState);
     const drawFramesPerSecond = useRef<number>(4);
     const nextFrameTime = useRef<number>(0);
+    const actorSize = 20;
 
     const runGameLoop = useCallback(() => {
         const canvas = canvasRef.current;
@@ -23,12 +24,16 @@ export default function World({ gameState }: Props)
             return;
         }
 
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.font = "48px serif";
-        context.fillText(`${gameStateSnapshot.current.currentTick}`, 10, 50);
+        context.fillText(`${gameStateSnapshot.current.currentTick}`, 50, 50);
 
+        context.font = `${actorSize}px serif`;
         gameStateSnapshot.current.actors.forEach(actor => {
-            context.fillRect(actor.locationX, actor.locationY, 10, 10);
+            context.fillText('🙂', actor.location.x, actor.location.y);
         });
         
     }, [canvasRef]);

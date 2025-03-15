@@ -1,10 +1,11 @@
+import { Vector2 } from "three";
 import { GameState } from "./models/GameState";
 
 export function getGameState(): GameState {
     var gameStateJson = localStorage.getItem("gameState");
 
     if (gameStateJson) {
-        return JSON.parse(gameStateJson);
+        return JSON.parse(gameStateJson, gameStateReviver);
     }
 
     return {
@@ -18,6 +19,26 @@ export function saveGameState(gameState: GameState | null) {
         localStorage.removeItem("gameState");
     }
     else{
-        localStorage.setItem("gameState", JSON.stringify(gameState));
+        localStorage.setItem("gameState", JSON.stringify(gameState, gameStateReplacer));
     }
+}
+
+function gameStateReplacer(key: string, value: any) {
+    if(value instanceof Vector2){
+        return {
+            x: value.x,
+            y: value.y,
+            serializedType: "Vector2"
+        }
+    }
+
+    return value;
+}
+
+function gameStateReviver(key: string, value: any) {
+    if(value.serializedType === "Vector2"){
+        return new Vector2(value.x, value.y);
+    }
+
+    return value;
 }

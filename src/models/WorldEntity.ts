@@ -1,4 +1,6 @@
+import { Vector2 } from "three";
+
 export interface WorldEntity {
-    locationX: number;
-    locationY: number;
+    uuid: string;
+    location: Vector2;
 }
