@@ -24,7 +24,7 @@ function tryCollectSticks(actor: Actor, gameState: GameState): ActorAction | nul
     if(!nearestResource) return null;
 
     const distance = actor.location.distanceTo(nearestResource.location);
-    if(distance <= nearestResource.collectionRadius){
+    if(distance <= nearestResource.size){
         return {
             actionType: ActionType.Collect,
             targetResource: nearestResource

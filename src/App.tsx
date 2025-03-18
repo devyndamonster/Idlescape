@@ -9,10 +9,13 @@ import { Vector2 } from 'three';
 import { getActorAction } from './game/ActorLogic';
 import { ActionType } from './enums/ActionType';
 import { ResourceType } from './enums/ResourceType';
+import { getClickedActor } from './game/WorldUtils';
+import CharacterDialog from './components/game/characterDialog';
 
 function App() {
 
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [selectedActorUuid, setSelectedActorUuid] = useState<string | null>(null);
   const frameRate = useRef<number>(10);
   const nextFrameTime = useRef<number>(0);
 
@@ -37,6 +40,7 @@ function App() {
           actor.harvestProgress += harvestDelta;
           if(actor.harvestProgress >= 1)
           {
+            actor.harvestProgress = 0;
             //TODO increase inventory
             //actor.inventory.push({name})
 
@@ -51,17 +55,14 @@ function App() {
         }
       }
 
-      const chanceOfResourceSpawn = 0.1;
-      const randomNumber = Math.random();
-
-      console.log(`Trying to spawn resource: ${randomNumber}`);
+      const chanceOfResourceSpawn = 0.01;
       if(Math.random() < chanceOfResourceSpawn){
         currentGameState.resources.push({
           uuid: crypto.randomUUID(),
           location: new Vector2(Math.random() * 1000, Math.random() * 1000),
           quantityRemaining: 5,
+          size: 20,
           harvestTime: 5,
-          collectionRadius: 5,
           resourceType: ResourceType.Stick,
         });
       }
@@ -73,28 +74,32 @@ function App() {
 
   const onClickMap = (x: number, y: number) => {
     if(gameState){
-      const newGameState: GameState = {
-        ...gameState,
-        actors: [
-          ...gameState.actors,
-          {
-            location: new Vector2(x, y),
-            moveSpeed: 2,
-            harvestProgress: 0,
-            uuid: crypto.randomUUID(),
-            inventory: [],
-            currentObjective: Objective.CollectSticks
-          }
-        ]
-      }
+      const clickedLocation = new Vector2(x, y);
+      const clickedActor = getClickedActor(clickedLocation, gameState);
 
-      setGameState(newGameState);
+      if(clickedActor){
+        setSelectedActorUuid(clickedActor.uuid);
+      }
     }
   };
 
   const onResetWorld = () => {
-    setGameState(null);
-    saveGameState(null);
+    const initialGameState: GameState = {
+      currentTick: 0,
+      actors: [{
+        location: new Vector2(100, 100),
+        moveSpeed: 2,
+        size: 20,
+        harvestProgress: 0,
+        uuid: crypto.randomUUID(),
+        inventory: [],
+        currentObjective: Objective.CollectSticks
+      }],
+      resources: []
+    }
+
+    setGameState(initialGameState);
+    saveGameState(initialGameState);
   }
 
   useEffect(() => {
@@ -120,7 +125,12 @@ function App() {
       <SidebarProvider>
         <GameSideBar onResetWorld={onResetWorld} />
         <SidebarInset style={{overflow: 'hidden'}}>
-          {gameState && <ScrollableMap gameState={gameState} onClickMap={onClickMap} />}
+          {gameState && (
+            <>
+              <ScrollableMap gameState={gameState} onClickMap={onClickMap} />
+              <CharacterDialog gameState={gameState} selectedActorUuid={selectedActorUuid} onClose={() => setSelectedActorUuid(null)}/>
+            </>
+          )}
           <div style={{ position: 'absolute', top: 0, left: 0 }}>
             <SidebarTrigger/>
           </div>
