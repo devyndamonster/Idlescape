@@ -1,13 +1,15 @@
 import { GameState } from "@/models/GameState";
 import World from "./world";
 import { useRef, useState } from "react";
+import { GameData } from "@/models/GameData";
 
 interface Props {
     gameState: GameState;
+    gameData: GameData;
     onClickMap?: (x: number, y: number) => void;
 }
 
-export default function ScrollableMap({gameState, onClickMap}: Props) {
+export default function ScrollableMap({gameState, gameData, onClickMap}: Props) {
 
     const [positionX, setPositionX] = useState(0);
     const [positionY, setPositionY] = useState(0);
@@ -72,7 +74,7 @@ export default function ScrollableMap({gameState, onClickMap}: Props) {
     return (
         <div>
             <div style={{position: 'absolute', top: positionY, left: positionX}}>
-                <World gameState={gameState} />
+                <World gameState={gameState} gameData={gameData} />
             </div>
             <div 
                 ref={pointerContainer}

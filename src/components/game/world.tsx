@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
 import { GameState } from "../../models/GameState";
+import { GameData } from "@/models/GameData";
 
 interface Props {
     gameState: GameState;
+    gameData: GameData;
 }
 
-export default function World({ gameState }: Props) 
+export default function World({ gameState, gameData }: Props) 
 {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameStateSnapshot = useRef<GameState>(gameState);
@@ -25,6 +27,7 @@ export default function World({ gameState }: Props)
 
         context.textAlign = 'center';
         context.textBaseline = 'middle';
+        context.fillStyle = 'black';
 
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.font = "48px serif";
@@ -38,6 +41,14 @@ export default function World({ gameState }: Props)
         gameStateSnapshot.current.resources.forEach(resource => {
             context.font = `${resource.size}px serif`;
             context.fillText('🪵', resource.location.x, resource.location.y);
+
+            const progressBarStartX = resource.location.x - (resource.size / 2);
+            const progressBarStartY = resource.location.y + (resource.size / 2);
+            const progressBarWidth = resource.size * (resource.quantityRemaining / gameData.resourceSettings[resource.resourceType].initialQuantity);
+            const progressBarHeight = 5;
+
+            context.fillStyle = 'lime';
+            context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
         });
         
     }, [canvasRef]);
