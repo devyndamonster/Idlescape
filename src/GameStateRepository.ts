@@ -10,6 +10,7 @@ export function getGameState(): GameState {
 
     return {
         currentTick: 0,
+        timestamp: Date.now(),
         actors: [],
         resources: [],
     };
@@ -37,7 +38,7 @@ function gameStateReplacer(_: string, value: any) {
 }
 
 function gameStateReviver(_: string, value: any) {
-    if(value.serializedType === "Vector2"){
+    if(value?.serializedType === "Vector2"){
         return new Vector2(value.x, value.y);
     }
 

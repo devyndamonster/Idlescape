@@ -24,6 +24,12 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose}:
                 <div className="grid gap-2 py-4">
                     <span>Id: {selectedActor?.uuid}</span>
                     <span>Harvest Progress: {selectedActor?.harvestProgress.toFixed(2)}</span>
+                    {selectedActor?.inventory
+                        .filter(slot => slot.item)
+                        .map((slot, index) => (
+                            <span key={index}>{slot.item!.name}: {slot.quantity}</span>
+                        )
+                    )}
                 </div>
                 <DialogFooter>
                     <Button type="submit">Save changes</Button>

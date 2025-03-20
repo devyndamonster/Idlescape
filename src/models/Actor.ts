@@ -1,9 +1,9 @@
 import { Objective } from "../enums/Objective";
-import { InventoryItem } from "./InventoryItem";
 import { WorldEntity } from "./WorldEntity";
+import { InventorySlot } from "./InventorySlot";
 
 export interface Actor extends WorldEntity {
-    inventory: InventoryItem[];
+    inventory: InventorySlot[];
     currentObjective: Objective;
     moveSpeed: number;
     harvestProgress: number;

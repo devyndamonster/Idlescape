@@ -6,12 +6,11 @@ import { GameSideBar } from './components/game/gameSideBar';
 import ScrollableMap from './components/game/scrollableMap';
 import { Objective } from './enums/Objective';
 import { Vector2 } from 'three';
-import { getActorAction } from './game/ActorLogic';
-import { ActionType } from './enums/ActionType';
 import { getClickedActor } from './game/WorldUtils';
 import CharacterDialog from './components/game/characterDialog';
 import { DefaultGameData, GameData } from './models/GameData';
-import { ResourceType } from './enums/ResourceType';
+import { getUpdatedGameState } from './game/GameLogic';
+import { InventorySlot } from './models/InventorySlot';
 
 function App() {
 
@@ -23,59 +22,12 @@ function App() {
   const nextFrameTime = useRef<number>(0);
 
   const runGameLoop = () => {
-    let currentGameState: GameState | undefined = undefined;
+    const currentGameState = gameStateRef.current ?? getGameState();
+    const updatedGameState = getUpdatedGameState(currentGameState, gameData);
 
-    if(!gameStateRef.current){
-      currentGameState = {...getGameState()};
-    }
-    else{
-      currentGameState = {...gameStateRef.current};
-    }
-    
-    currentGameState.currentTick += 1;
-
-    for(const actor of currentGameState.actors){
-      const action = getActorAction(actor, currentGameState);
-      
-      if(action.actionType == ActionType.Collect){
-        const targetResource = currentGameState.resources.find(r => r.uuid === action.targetResource.uuid);
-        if(targetResource){
-          const harvestDelta = (1 / frameRate.current) / targetResource.harvestTime;
-          actor.harvestProgress += harvestDelta;
-          if(actor.harvestProgress >= 1)
-          {
-            actor.harvestProgress = 0;
-            //TODO increase inventory
-            //actor.inventory.push({name})
-
-            targetResource.quantityRemaining -= 1;
-            if(targetResource.quantityRemaining <= 0){
-              currentGameState.resources = currentGameState.resources.filter(r => r.uuid !== targetResource.uuid);
-            }
-          }
-        }
-      }
-      else if(action.actionType == ActionType.Move){
-        actor.location.add(action.direction.clone().multiplyScalar(actor.moveSpeed));
-      }
-    }
-
-    const chanceOfResourceSpawn = 0.01;
-    if(Math.random() < chanceOfResourceSpawn){
-      const resourceData = gameData.resourceSettings[ResourceType.Stick];
-      currentGameState.resources.push({
-        uuid: crypto.randomUUID(),
-        location: new Vector2(Math.random() * 1000, Math.random() * 1000),
-        quantityRemaining: resourceData.initialQuantity,
-        size: resourceData.size,
-        harvestTime: resourceData.harvestTime,
-        resourceType: resourceData.resourceType,
-      });
-    }
-
-    gameStateRef.current = currentGameState;
-    saveGameState(currentGameState);
-    setGameState(currentGameState);
+    gameStateRef.current = updatedGameState;
+    saveGameState(updatedGameState);
+    setGameState(updatedGameState);
   };
 
   const onClickMap = (x: number, y: number) => {
@@ -92,13 +44,14 @@ function App() {
   const onResetWorld = () => {
     const initialGameState: GameState = {
       currentTick: 0,
+      timestamp: Date.now(),
       actors: [{
         location: new Vector2(100, 100),
         moveSpeed: 2,
         size: 20,
         harvestProgress: 0,
         uuid: crypto.randomUUID(),
-        inventory: [],
+        inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
         currentObjective: Objective.CollectSticks
       }],
       resources: []
