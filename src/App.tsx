@@ -10,11 +10,13 @@ import { getClickedActor } from './game/WorldUtils';
 import CharacterDialog from './components/game/characterDialog';
 import { DefaultGameData, GameData } from './models/GameData';
 import { getUpdatedGameState } from './game/GameLogic';
-import { InventorySlot } from './models/InventorySlot';
+import { UserAction } from './enums/UserAction';
+import { BuildableType } from './enums/BuildableType';
 
 function App() {
 
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [userAction, setUserAction] = useState<UserAction | null>(null);
   const gameStateRef = useRef<GameState | null>(null);
   const [gameData] = useState<GameData>(DefaultGameData);
   const [selectedActorUuid, setSelectedActorUuid] = useState<string | null>(null);
@@ -38,6 +40,25 @@ function App() {
       if(clickedActor){
         setSelectedActorUuid(clickedActor.uuid);
       }
+
+      if(userAction == UserAction.BuildStockpile){
+
+        const updatedGameState: GameState = {
+          ...gameState,
+          structures: [
+            ...gameState.structures,
+            {
+              uuid: crypto.randomUUID(),
+              location: clickedLocation,
+              size: 50,
+              structureType: BuildableType.Stockpile
+            }
+          ]
+        };
+
+        setGameState(updatedGameState);
+        setUserAction(null);
+      }
     }
   };
 
@@ -54,7 +75,8 @@ function App() {
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
         currentObjective: Objective.CollectSticks
       }],
-      resources: []
+      resources: [],
+      structures: []
     }
 
     gameStateRef.current = initialGameState;
@@ -83,7 +105,7 @@ function App() {
   return (
     <>
       <SidebarProvider>
-        <GameSideBar onResetWorld={onResetWorld} />
+        <GameSideBar onResetWorld={onResetWorld} onUserActionStarted={setUserAction}/>
         <SidebarInset style={{overflow: 'hidden'}}>
           {gameState && (
             <>

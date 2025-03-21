@@ -50,6 +50,11 @@ export default function World({ gameState, gameData }: Props)
             context.fillStyle = 'lime';
             context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
         });
+
+        gameStateSnapshot.current.structures.forEach(structure => {
+            context.font = `${structure.size}px serif`;
+            context.fillText('🏠', structure.location.x, structure.location.y);
+        });
         
     }, [canvasRef]);
 

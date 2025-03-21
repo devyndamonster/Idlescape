@@ -1,29 +1,57 @@
-import { Settings } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
+import { HousePlus, Trash2, Warehouse } from "lucide-react";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
+import { CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
+import { Collapsible } from "@radix-ui/react-collapsible";
+import { UserAction } from "@/enums/UserAction";
 
 interface Props {
     onResetWorld: () => void;
+    onUserActionStarted: (userAction: UserAction) => void;
 }
 
-export function GameSideBar({onResetWorld}: Props) {
+export function GameSideBar({onResetWorld, onUserActionStarted}: Props) {
     return (
         <Sidebar>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Application</SidebarGroupLabel>
+                    <SidebarGroupLabel>Game</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <Collapsible className="group/collapsible">
+                                <SidebarMenuItem>
+                                    <CollapsibleTrigger asChild>
+                                        <SidebarMenuButton asChild>
+                                            <a href={"#"}>
+                                                <HousePlus />Build
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <SidebarMenuSub>
+                                            <SidebarMenuSubItem>
+                                                <SidebarMenuSubButton onClick={() => onUserActionStarted(UserAction.BuildStockpile)} asChild>
+                                                    <a href={"#"}>
+                                                        <Warehouse /> Stockpile
+                                                    </a>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        </SidebarMenuSub>
+                                    </CollapsibleContent>
+                                </SidebarMenuItem>
+                            </Collapsible>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Settings</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild>
-                                    <a href={"#"}>
-                                        <Settings />
-                                        <span>Settings</span>
-                                    </a>
-                                </SidebarMenuButton>
                                 <SidebarMenuButton onClick={onResetWorld} asChild>
-                                    <span>
-                                        <Settings /> Reset World
-                                    </span>
+                                    <a href={"#"}>
+                                        <Trash2 />
+                                        <span>Reset World</span>
+                                    </a>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
