@@ -5,10 +5,14 @@ import { GameState } from "@/models/GameState";
 import { Vector2 } from "three";
 import { getActorAction, tryAddItemToInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
+import { Structure } from "@/models/Structure";
 
-export function getUpdatedGameState(gameState: GameState, gameData: GameData): GameState {
+export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedStructures: Structure[]): GameState {
     
-    const updatedGameState = {...gameState};
+    const updatedGameState: GameState = {
+        ...gameState,
+        structures: [...gameState.structures, ...queuedStructures],
+    };
     
     const deltaTimeSeconds = getDeltaTimeSeconds(updatedGameState.timestamp);
 

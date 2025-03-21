@@ -12,12 +12,14 @@ import { DefaultGameData, GameData } from './models/GameData';
 import { getUpdatedGameState } from './game/GameLogic';
 import { UserAction } from './enums/UserAction';
 import { BuildableType } from './enums/BuildableType';
+import { Structure } from './models/Structure';
 
 function App() {
 
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [userAction, setUserAction] = useState<UserAction | null>(null);
   const gameStateRef = useRef<GameState | null>(null);
+  const queuedBuildActions = useRef<Structure[]>([]);
   const [gameData] = useState<GameData>(DefaultGameData);
   const [selectedActorUuid, setSelectedActorUuid] = useState<string | null>(null);
   const frameRate = useRef<number>(10);
@@ -25,8 +27,9 @@ function App() {
 
   const runGameLoop = () => {
     const currentGameState = gameStateRef.current ?? getGameState();
-    const updatedGameState = getUpdatedGameState(currentGameState, gameData);
+    const updatedGameState = getUpdatedGameState(currentGameState, gameData, queuedBuildActions.current);
 
+    queuedBuildActions.current = [];
     gameStateRef.current = updatedGameState;
     saveGameState(updatedGameState);
     setGameState(updatedGameState);
@@ -42,21 +45,14 @@ function App() {
       }
 
       if(userAction == UserAction.BuildStockpile){
-
-        const updatedGameState: GameState = {
-          ...gameState,
-          structures: [
-            ...gameState.structures,
-            {
-              uuid: crypto.randomUUID(),
-              location: clickedLocation,
-              size: 50,
-              structureType: BuildableType.Stockpile
-            }
-          ]
+        const structure: Structure = {
+          uuid: crypto.randomUUID(),
+          location: clickedLocation,
+          size: 50,
+          structureType: BuildableType.Stockpile
         };
 
-        setGameState(updatedGameState);
+        queuedBuildActions.current.push(structure);
         setUserAction(null);
       }
     }
