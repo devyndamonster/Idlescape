@@ -9,7 +9,7 @@ import { Vector2 } from 'three';
 import { getClickedActor } from './game/WorldUtils';
 import CharacterDialog from './components/game/characterDialog';
 import { DefaultGameData, GameData } from './models/GameData';
-import { getUpdatedGameState } from './game/GameLogic';
+import { generateInitialGameState, getUpdatedGameState } from './game/GameLogic';
 import { UserAction } from './enums/UserAction';
 import { BuildableType } from './enums/BuildableType';
 import { Structure } from './models/Structure';
@@ -59,22 +59,7 @@ function App() {
   };
 
   const onResetWorld = () => {
-    const initialGameState: GameState = {
-      currentTick: 0,
-      timestamp: Date.now(),
-      actors: [{
-        location: new Vector2(100, 100),
-        moveSpeed: 2,
-        size: 20,
-        harvestProgress: 0,
-        uuid: crypto.randomUUID(),
-        inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
-        currentObjective: Objective.CollectSticks
-      }],
-      resources: [],
-      structures: []
-    }
-
+    const initialGameState = generateInitialGameState(gameData);
     gameStateRef.current = initialGameState;
     setGameState(initialGameState);
     saveGameState(initialGameState);

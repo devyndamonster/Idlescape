@@ -11,6 +11,7 @@ export default function World({ gameState, gameData }: Props)
 {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameStateSnapshot = useRef<GameState>(gameState);
+    const gameDataSnapshot = useRef<GameData>(gameData);
     const drawFramesPerSecond = useRef<number>(30);
     const nextFrameTime = useRef<number>(0);
 
@@ -39,16 +40,19 @@ export default function World({ gameState, gameData }: Props)
         });
 
         gameStateSnapshot.current.resources.forEach(resource => {
+            const resourceData = gameDataSnapshot.current.resourceSettings[resource.resourceType];
             context.font = `${resource.size}px serif`;
-            context.fillText('🪵', resource.location.x, resource.location.y);
+            context.fillText(resourceData.icon, resource.location.x, resource.location.y);
 
-            const progressBarStartX = resource.location.x - (resource.size / 2);
-            const progressBarStartY = resource.location.y + (resource.size / 2);
-            const progressBarWidth = resource.size * (resource.quantityRemaining / gameData.resourceSettings[resource.resourceType].initialQuantity);
-            const progressBarHeight = 5;
-
-            context.fillStyle = 'lime';
-            context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
+            if(resource.quantityRemaining < resourceData.initialQuantity){
+                const progressBarStartX = resource.location.x - (resource.size / 2);
+                const progressBarStartY = resource.location.y + (resource.size / 2);
+                const progressBarWidth = resource.size * (resource.quantityRemaining / resourceData.initialQuantity);
+                const progressBarHeight = 5;
+    
+                context.fillStyle = 'lime';
+                context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
+            }
         });
 
         gameStateSnapshot.current.structures.forEach(structure => {
@@ -80,18 +84,22 @@ export default function World({ gameState, gameData }: Props)
         gameStateSnapshot.current = gameState;
     }, [gameState]);
 
+    useEffect(() => {
+        gameDataSnapshot.current = gameData;
+    }, [gameData]);
+
     return (
         <canvas 
             id="canvas" 
             ref={canvasRef} 
-            width={1000} 
-            height={1000}
+            width={gameData.worldWidth} 
+            height={gameData.worldHeight}
             style={{
                 backgroundColor: 'green',
                 display: 'block',
                 margin: '0 auto',
-                width: '1000px',
-                height: '1000px'
+                width: `${gameData.worldWidth}px`,
+                height: `${gameData.worldHeight}px`
             }}
         />
     )

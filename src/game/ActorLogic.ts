@@ -6,6 +6,19 @@ import { GameState } from "@/models/GameState";
 import { getNearestResource } from "./WorldUtils";
 import { ResourceType } from "@/enums/ResourceType";
 import { InventoryItem } from "@/models/InventoryItem";
+import { Vector2 } from "three";
+
+export function getNewActor(location: Vector2): Actor {
+    return {
+        location: location,
+        moveSpeed: 2,
+        size: 20,
+        harvestProgress: 0,
+        uuid: crypto.randomUUID(),
+        inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
+        currentObjective: Objective.CollectSticks
+    }
+}
 
 export function getActorAction(actor: Actor, gameState: GameState): ActorAction {
     

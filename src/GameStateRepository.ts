@@ -13,6 +13,7 @@ export function getGameState(): GameState {
         timestamp: Date.now(),
         actors: [],
         resources: [],
+        structures: []
     };
 }
 
