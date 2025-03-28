@@ -27,14 +27,23 @@ export function getActorAction(actor: Actor, gameState: GameState): ActorAction 
     }
 
     if(actor.currentObjective == Objective.CollectSticks){
-        action = tryCollectSticks(actor, gameState) ?? action;
+        action = tryCollectResource(actor, ResourceType.Stick, gameState) ?? action;
+    }
+    else if(actor.currentObjective == Objective.CollectStones){
+        action = tryCollectResource(actor, ResourceType.Stone, gameState) ?? action;
+    }
+    else if(actor.currentObjective == Objective.CollectGrass){
+        action = tryCollectResource(actor, ResourceType.Grass, gameState) ?? action;
+    }
+    else if(actor.currentObjective == Objective.CollectTrees){
+        action = tryCollectResource(actor, ResourceType.Tree, gameState) ?? action;
     }
 
     return action;
 }
 
-function tryCollectSticks(actor: Actor, gameState: GameState): ActorAction | null {
-    const nearestResource = getNearestResource(actor.location, ResourceType.Stick, gameState);
+function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState: GameState): ActorAction | null {
+    const nearestResource = getNearestResource(actor.location, resourceType, gameState);
     if(!nearestResource) return null;
 
     const distance = actor.location.distanceTo(nearestResource.location);

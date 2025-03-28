@@ -6,7 +6,6 @@ import { MathUtils, Vector2 } from "three";
 import { getActorAction, getNewActor, tryAddItemToInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
 import { Structure } from "@/models/Structure";
-import { Objective } from "@/enums/Objective";
 
 export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedStructures: Structure[]): GameState {
     

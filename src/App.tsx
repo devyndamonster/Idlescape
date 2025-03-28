@@ -4,7 +4,6 @@ import { getGameState, saveGameState } from './GameStateRepository';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
 import { GameSideBar } from './components/game/gameSideBar';
 import ScrollableMap from './components/game/scrollableMap';
-import { Objective } from './enums/Objective';
 import { Vector2 } from 'three';
 import { getClickedActor } from './game/WorldUtils';
 import CharacterDialog from './components/game/characterDialog';
@@ -13,6 +12,7 @@ import { generateInitialGameState, getUpdatedGameState } from './game/GameLogic'
 import { UserAction } from './enums/UserAction';
 import { BuildableType } from './enums/BuildableType';
 import { Structure } from './models/Structure';
+import { Actor } from './models/Actor';
 
 function App() {
 
@@ -65,6 +65,20 @@ function App() {
     saveGameState(initialGameState);
   }
 
+  const onActorUpdated = (updatedActor: Actor) => {
+    if(gameState){
+      const updatedActors = gameState.actors.map(actor => actor.uuid === updatedActor.uuid ? updatedActor : actor);
+      const updatedGameState = {
+        ...gameState,
+        actors: updatedActors
+      };
+
+      gameStateRef.current = updatedGameState;
+      setGameState(updatedGameState);
+      saveGameState(updatedGameState);
+    }
+  }
+
   useEffect(() => {
     let frameId: number;
 
@@ -91,7 +105,7 @@ function App() {
           {gameState && (
             <>
               <ScrollableMap gameState={gameState} gameData={gameData} onClickMap={onClickMap} />
-              <CharacterDialog gameState={gameState} selectedActorUuid={selectedActorUuid} onClose={() => setSelectedActorUuid(null)}/>
+              <CharacterDialog gameState={gameState} selectedActorUuid={selectedActorUuid} onClose={() => setSelectedActorUuid(null)} onActorUpdated={onActorUpdated}/>
             </>
           )}
           <div style={{ position: 'absolute', top: 0, left: 0 }}>
