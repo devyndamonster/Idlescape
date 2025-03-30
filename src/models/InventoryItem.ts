@@ -1,3 +1,5 @@
+import { ItemType } from "@/enums/ItemType";
+
 export interface InventoryItem {
-    name: string;
+    itemType: ItemType;
 }

@@ -2,15 +2,14 @@ import { GameState } from "@/models/GameState";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { Input } from "../ui/input";
 import { Progress } from "../ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { ObjectiveType } from "@/enums/ObjectiveType";
 import { Actor } from "@/models/Actor";
 import { Objective } from "@/models/Objective";
 import ObjectiveSelect from "./objectiveSelect";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { ItemType } from "@/enums/ItemType";
 
 interface Props {
     gameState: GameState;
@@ -85,7 +84,7 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
                                                     .filter(slot => slot.item)
                                                     .map((slot, index) => (
                                                         <TableRow key={index}>
-                                                            <TableCell>{slot.item?.name}</TableCell>
+                                                            <TableCell>{ItemType[slot.item!.itemType]}</TableCell>
                                                             <TableCell>{slot.quantity}</TableCell>
                                                         </TableRow>
                                                     )

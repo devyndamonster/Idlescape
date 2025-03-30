@@ -1,15 +1,5 @@
-import { GameState } from "@/models/GameState";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
-import { Input } from "../ui/input";
-import { Progress } from "../ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ObjectiveType } from "@/enums/ObjectiveType";
-import { Actor } from "@/models/Actor";
 import { Objective } from "@/models/Objective";
-import { useState } from "react";
 import { ResourceType } from "@/enums/ResourceType";
 import EnumSelect from "./enumSelect";
 

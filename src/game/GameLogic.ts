@@ -34,12 +34,11 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
                 {
                     actor.harvestProgress = 0;
                     
-                    const inventoryItem: InventoryItem = {
-                        name:  ResourceType[targetResource.resourceType],
-                    };
-
-                    tryAddItemToInventory(actor, inventoryItem);
-
+                    const harvestedItems = getDroppedItemsFromResource(targetResource.resourceType, gameData);
+                    for (const item of harvestedItems) {
+                        tryAddItemToInventory(actor, item);
+                    }
+                    
                     targetResource.quantityRemaining -= 1;
                     if(targetResource.quantityRemaining <= 0){
                         updatedGameState.resources = updatedGameState.resources.filter(r => r.uuid !== targetResource.uuid);
@@ -91,6 +90,21 @@ export function generateInitialGameState(gameData: GameData): GameState {
     console.log(initialGameState);
     
     return initialGameState;
+}
+
+export function getDroppedItemsFromResource(resourceType: ResourceType, gameData: GameData): InventoryItem[] {
+    const resource = gameData.resourceSettings[resourceType];
+    const droppedItems: InventoryItem[] = [];
+    for(const drop of resource.drops) {
+        if(Math.random() < drop.dropChance) {
+            for(let i = 0; i < drop.dropAmount; i++) {
+                droppedItems.push({
+                    itemType: drop.itemType,
+                });
+            }
+        }
+    }
+    return droppedItems;
 }
 
 function generateResource(resourceType: ResourceType, gameData: GameData, gameState: GameState){

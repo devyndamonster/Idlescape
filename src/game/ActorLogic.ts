@@ -57,7 +57,7 @@ function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState:
 }
 
 export function tryAddItemToInventory(actor: Actor, item: InventoryItem): boolean {
-    const slotWithItem = actor.inventory.find(slot => slot.item?.name === item.name);
+    const slotWithItem = actor.inventory.find(slot => slot.item?.itemType === item.itemType);
     if(slotWithItem){
         slotWithItem.quantity += 1;
         return true;
