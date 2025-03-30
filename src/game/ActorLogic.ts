@@ -1,5 +1,5 @@
 import { ActionType } from "@/enums/ActionType";
-import { Objective } from "@/enums/Objective";
+import { ObjectiveType } from "@/enums/ObjectiveType";
 import { Actor } from "@/models/Actor";
 import { ActorAction } from "@/models/ActorAction";
 import { GameState } from "@/models/GameState";
@@ -16,7 +16,10 @@ export function getNewActor(location: Vector2): Actor {
         harvestProgress: 0,
         uuid: crypto.randomUUID(),
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
-        currentObjective: Objective.CollectSticks
+        currentObjective: {
+            objectiveType: ObjectiveType.CollectResource,
+            resourceType: ResourceType.Stick,
+        }
     }
 }
 
@@ -26,17 +29,8 @@ export function getActorAction(actor: Actor, gameState: GameState): ActorAction 
         actionType: ActionType.Idle,
     }
 
-    if(actor.currentObjective == Objective.CollectSticks){
-        action = tryCollectResource(actor, ResourceType.Stick, gameState) ?? action;
-    }
-    else if(actor.currentObjective == Objective.CollectStones){
-        action = tryCollectResource(actor, ResourceType.Stone, gameState) ?? action;
-    }
-    else if(actor.currentObjective == Objective.CollectGrass){
-        action = tryCollectResource(actor, ResourceType.Grass, gameState) ?? action;
-    }
-    else if(actor.currentObjective == Objective.CollectTrees){
-        action = tryCollectResource(actor, ResourceType.Tree, gameState) ?? action;
+    if(actor.currentObjective.objectiveType == ObjectiveType.CollectResource){
+        action = tryCollectResource(actor, actor.currentObjective.resourceType, gameState) ?? action;
     }
 
     return action;

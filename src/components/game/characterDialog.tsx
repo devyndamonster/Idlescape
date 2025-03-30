@@ -6,8 +6,11 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Input } from "../ui/input";
 import { Progress } from "../ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { Objective } from "@/enums/Objective";
+import { ObjectiveType } from "@/enums/ObjectiveType";
 import { Actor } from "@/models/Actor";
+import { Objective } from "@/models/Objective";
+import ObjectiveSelect from "./objectiveSelect";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 
 interface Props {
     gameState: GameState;
@@ -24,16 +27,8 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
         return null;
     }
 
-    const objectiveMapping: Record<string, Objective> = Object
-        .values(Objective)
-        .filter(value => typeof value === "number")
-        .reduce((acc: Record<string, Objective>, value) => {
-            acc[Objective[value]] = value;
-            return acc;
-        }, {});
-
-    const onObjectiveChange = (objective: string) => {
-        const updatedActor: Actor = {...selectedActor, currentObjective: objectiveMapping[objective]};
+    const onObjectiveChange = (objective: Objective) => {
+        const updatedActor: Actor = {...selectedActor, currentObjective: objective};
         onActorUpdated(updatedActor);
     }
 
@@ -46,64 +41,63 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
                         You are viewing the details of an actor
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="actor-objective" className="text-right">
-                            Objective
-                        </Label>
-                        <Select value={Objective[selectedActor.currentObjective]} onValueChange={onObjectiveChange}>
-                            <SelectTrigger id="actor-objective" className="col-span-3 w-full">
-                                <SelectValue placeholder="Select an objective" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectLabel>Objectives</SelectLabel>
-                                    {Object.keys(objectiveMapping).map(objective => (
-                                        <SelectItem key={objective} value={objective}>{objective}</SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="actor-id" className="text-right">
-                            Username
-                        </Label>
-                        <Input disabled id="actor-id" value={selectedActor.uuid} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="actor-harvest-progress" className="text-right">
-                            Harvest Progress
-                        </Label>
-                        <Progress id="actor-harvest-progress" value={selectedActor.harvestProgress * 100} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label className="col-span-4">
-                            Inventory
-                        </Label>
-                        <div className="col-span-4" >
-                            <Table >
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Item</TableHead>
-                                        <TableHead>Quantity</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {selectedActor?.inventory
-                                        .filter(slot => slot.item)
-                                        .map((slot, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{slot.item?.name}</TableCell>
-                                                <TableCell>{slot.quantity}</TableCell>
-                                            </TableRow>
-                                        )
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </div>
-                </div>
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                        <AccordionTrigger>Actor Details</AccordionTrigger>
+                        <AccordionContent>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="actor-id" className="text-right">
+                                        Actor Id
+                                    </Label>
+                                    <Input disabled id="actor-id" value={selectedActor.uuid} className="col-span-3" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="actor-harvest-progress" className="text-right">
+                                        Harvest Progress
+                                    </Label>
+                                    <Progress id="actor-harvest-progress" value={selectedActor.harvestProgress * 100} className="col-span-3" />
+                                </div>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                        <AccordionTrigger>Objective</AccordionTrigger>
+                        <AccordionContent>
+                            <ObjectiveSelect onObjectiveChanged={onObjectiveChange} currentObjective={selectedActor.currentObjective} />
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-3">
+                        <AccordionTrigger>Inventory</AccordionTrigger>
+                        <AccordionContent>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <div className="col-span-4" >
+                                        <Table >
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Item</TableHead>
+                                                    <TableHead>Quantity</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {selectedActor?.inventory
+                                                    .filter(slot => slot.item)
+                                                    .map((slot, index) => (
+                                                        <TableRow key={index}>
+                                                            <TableCell>{slot.item?.name}</TableCell>
+                                                            <TableCell>{slot.quantity}</TableCell>
+                                                        </TableRow>
+                                                    )
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
                 <DialogFooter>
                     <Button type="submit">Save changes</Button>
                 </DialogFooter>
