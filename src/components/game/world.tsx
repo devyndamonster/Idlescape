@@ -57,7 +57,7 @@ export default function World({ gameState, gameData }: Props)
 
         gameStateSnapshot.current.structures.forEach(structure => {
             context.font = `${structure.size}px serif`;
-            context.fillText('🏠', structure.location.x, structure.location.y);
+            context.fillText(structure.icon, structure.location.x, structure.location.y);
         });
         
     }, [canvasRef]);

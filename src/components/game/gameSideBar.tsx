@@ -1,4 +1,4 @@
-import { HousePlus, Trash2, Warehouse } from "lucide-react";
+import { HousePlus, Leaf, Trash2, TreePine, Warehouse } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
 import { CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { Collapsible } from "@radix-ui/react-collapsible";
@@ -32,6 +32,35 @@ export function GameSideBar({onResetWorld, onUserActionStarted}: Props) {
                                                 <SidebarMenuSubButton onClick={() => onUserActionStarted(UserAction.BuildStockpile)} asChild>
                                                     <a href={"#"}>
                                                         <Warehouse /> Stockpile
+                                                    </a>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        </SidebarMenuSub>
+                                    </CollapsibleContent>
+                                </SidebarMenuItem>
+                            </Collapsible>
+                            <Collapsible className="group/collapsible">
+                                <SidebarMenuItem>
+                                    <CollapsibleTrigger asChild>
+                                        <SidebarMenuButton asChild>
+                                            <a href={"#"}>
+                                                <HousePlus />Plant
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <SidebarMenuSub>
+                                            <SidebarMenuSubItem>
+                                                <SidebarMenuSubButton onClick={() => onUserActionStarted(UserAction.PlantTreeSeed)} asChild>
+                                                    <a href={"#"}>
+                                                        <TreePine /> Plant Tree
+                                                    </a>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                            <SidebarMenuSubItem>
+                                                <SidebarMenuSubButton onClick={() => onUserActionStarted(UserAction.PlantGrassSeed)} asChild>
+                                                    <a href={"#"}>
+                                                        <Leaf /> Plant Grass
                                                     </a>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>

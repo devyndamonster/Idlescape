@@ -13,6 +13,7 @@ import { UserAction } from './enums/UserAction';
 import { BuildableType } from './enums/BuildableType';
 import { Structure } from './models/Structure';
 import { Actor } from './models/Actor';
+import { Button } from './components/ui/button';
 
 function App() {
 
@@ -40,20 +41,41 @@ function App() {
       const clickedLocation = new Vector2(x, y);
       const clickedActor = getClickedActor(clickedLocation, gameState);
 
-      if(clickedActor){
-        setSelectedActorUuid(clickedActor.uuid);
-      }
-
       if(userAction == UserAction.BuildStockpile){
         const structure: Structure = {
           uuid: crypto.randomUUID(),
           location: clickedLocation,
           size: 50,
+          icon: '🏠',
           structureType: BuildableType.Stockpile
         };
 
         queuedBuildActions.current.push(structure);
-        setUserAction(null);
+      }
+      else if(userAction == UserAction.PlantTreeSeed){
+        const structure: Structure = {
+          uuid: crypto.randomUUID(),
+          location: clickedLocation,
+          size: 30,
+          icon: '🌱',
+          structureType: BuildableType.TreeSeed
+        };
+
+        queuedBuildActions.current.push(structure);
+      }
+      else if(userAction == UserAction.PlantGrassSeed){
+        const structure: Structure = {
+          uuid: crypto.randomUUID(),
+          location: clickedLocation,
+          size: 30,
+          icon: '🌱',
+          structureType: BuildableType.GrassSeed
+        };
+
+        queuedBuildActions.current.push(structure);
+      }
+      else if(clickedActor){
+        setSelectedActorUuid(clickedActor.uuid);
       }
     }
   };
@@ -109,7 +131,12 @@ function App() {
             </>
           )}
           <div style={{ position: 'absolute', top: 0, left: 0 }}>
-            <SidebarTrigger/>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', padding: '10px' }}>
+              <SidebarTrigger size="default" variant={"outline"} className='h-7'/>
+              {userAction != null &&
+                <Button size="default" variant={"outline"} className="h-7" onClick={() => setUserAction(null)}>Cancel Building</Button>
+              }
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
