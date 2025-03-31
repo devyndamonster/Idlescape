@@ -2,23 +2,27 @@ import { ResourceType } from "@/enums/ResourceType";
 import { Actor } from "@/models/Actor";
 import { GameState } from "@/models/GameState";
 import { Resource } from "@/models/Resource";
+import { WorldEntity } from "@/models/WorldEntity";
 import { Vector2 } from "three";
 
 export function getNearestResource(startLocation: Vector2, resourceType: ResourceType, gameState: GameState): Resource | null {
-    let minDistance = Number.MAX_VALUE;
-    let nearestResource: Resource | null = null;
+    const resources = gameState.resources.filter(resource => resource.resourceType === resourceType);
+    return getNearestEntity(startLocation, resources);
+}
 
-    for(const resource of gameState.resources) {
-        if(resource.resourceType === resourceType) {
-            const distance = startLocation.distanceTo(resource.location);
-            if(distance < minDistance) {
-                minDistance = distance;
-                nearestResource = resource;
-            }
+export function getNearestEntity<T extends WorldEntity>(startLocation: Vector2, entities: T[]){
+    let minDistance = Number.MAX_VALUE;
+    let nearestEntity: T | null = null;
+
+    for(const entity of entities) {
+        const distance = startLocation.distanceTo(entity.location);
+        if(distance < minDistance) {
+            minDistance = distance;
+            nearestEntity = entity;
         }
     }
 
-    return nearestResource;
+    return nearestEntity;
 }
 
 export function getClickedActor(clickLocation: Vector2, gameState: GameState): Actor | null {

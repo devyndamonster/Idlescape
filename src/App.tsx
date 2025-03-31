@@ -48,7 +48,7 @@ function App() {
           ...blueprintData,
           uuid: crypto.randomUUID(),
           location: clickedLocation,
-          currentItems: {},
+          currentItems: [],
         });
       }
       else if(clickedActor){

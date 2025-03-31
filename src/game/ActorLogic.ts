@@ -3,7 +3,7 @@ import { ObjectiveType } from "@/enums/ObjectiveType";
 import { Actor } from "@/models/Actor";
 import { ActorAction } from "@/models/ActorAction";
 import { GameState } from "@/models/GameState";
-import { getNearestResource } from "./WorldUtils";
+import { getNearestEntity, getNearestResource } from "./WorldUtils";
 import { ResourceType } from "@/enums/ResourceType";
 import { InventoryItem } from "@/models/InventoryItem";
 import { Vector2 } from "three";
@@ -32,6 +32,9 @@ export function getActorAction(actor: Actor, gameState: GameState): ActorAction 
     if(actor.currentObjective.objectiveType == ObjectiveType.CollectResource){
         action = tryCollectResource(actor, actor.currentObjective.resourceType, gameState) ?? action;
     }
+    else if(actor.currentObjective.objectiveType == ObjectiveType.BuildStructure){
+        action = tryBuildStructure(actor, gameState) ?? action;
+    }
 
     return action;
 }
@@ -49,6 +52,38 @@ function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState:
     }
     else{
         const direction = nearestResource.location.clone().sub(actor.location).normalize();
+        return {
+            actionType: ActionType.Move,
+            direction: direction,
+        };
+    }
+}
+
+function tryBuildStructure(actor: Actor, gameState: GameState): ActorAction | null {
+    const buildableBlueprints = gameState.blueprints.filter(blueprint => {
+        const providableItems = blueprint.requiredItems.filter(requiredItem => {
+            const currentItem = blueprint.currentItems.find(i => i.itemType === requiredItem.itemType);
+            const neededQuantity = requiredItem.quantity - (currentItem?.quantity ?? 0);
+            const itemInInventory = actor.inventory.find(slot => slot.item?.itemType === requiredItem.itemType);
+
+            return neededQuantity > 0 && ((itemInInventory?.quantity ?? 0) > 0);
+        });
+
+        return providableItems.length > 0
+    })
+
+    const nearestBlueprint = getNearestEntity(actor.location, buildableBlueprints);
+
+    if(!nearestBlueprint) return null;
+
+    const distance = actor.location.distanceTo(nearestBlueprint.location);
+    if(distance <= nearestBlueprint.size){
+        return {
+            actionType: ActionType.Idle
+        }
+    }
+    else{
+        const direction = nearestBlueprint.location.clone().sub(actor.location).normalize();
         return {
             actionType: ActionType.Move,
             direction: direction,

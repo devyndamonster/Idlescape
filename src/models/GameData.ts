@@ -96,10 +96,10 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         buildableType: BuildableType.Stockpile,
         icon: '🏠',
         size: 50,
-        requiredItems: {
-            [ItemType.Stick]: 5,
-            [ItemType.Stone]: 5,
-        },
+        requiredItems: [
+            { itemType: ItemType.Stick, quantity: 10 },
+            { itemType: ItemType.Stone, quantity: 10 },
+        ],
         onComplete: (blueprint, gameState) => {
             const updatedGameState: GameState = { 
                 ...gameState,
@@ -122,9 +122,9 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         buildableType: BuildableType.TreeSeed,
         icon: '🌱',
         size: 30,
-        requiredItems: {
-            [ItemType.TreeSeed]: 1,
-        },
+        requiredItems: [
+            { itemType: ItemType.TreeSeed, quantity: 1 },
+        ],
         onComplete: (blueprint, gameState, gameData) => {
             const updatedGameState: GameState = { 
                 ...gameState,
@@ -148,9 +148,9 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         buildableType: BuildableType.GrassSeed,
         icon: '🌱',
         size: 30,
-        requiredItems: {
-            [ItemType.GrassSeed]: 1,
-        },
+        requiredItems: [
+            { itemType: ItemType.GrassSeed, quantity: 1 },
+        ],
         onComplete: (blueprint, gameState, gameData) => {
             const updatedGameState: GameState = { 
                 ...gameState,

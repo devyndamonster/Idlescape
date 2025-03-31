@@ -64,8 +64,8 @@ export default function World({ gameState, gameData }: Props)
             context.font = `${blueprint.size}px serif`;
             context.fillText(blueprint.icon, blueprint.location.x, blueprint.location.y);
 
-            const totalItemCountRequired = Object.values(blueprint.requiredItems).reduce((a, b) => a + b, 0);
-            const totalItemCountProvided = Object.values(blueprint.currentItems).reduce((a, b) => a + b, 0);
+            const totalItemCountRequired = blueprint.requiredItems.reduce((a, b) => a + b.quantity, 0);
+            const totalItemCountProvided = blueprint.currentItems.reduce((a, b) => a + b.quantity, 0);
 
             const progressBarStartX = blueprint.location.x - (blueprint.size / 2);
             const progressBarStartY = blueprint.location.y + (blueprint.size / 2);
