@@ -1,5 +1,3 @@
-export enum UserAction {
-    BuildStockpile,
-    PlantTreeSeed,
-    PlantGrassSeed,
+export enum UserActionType {
+    Build
 }

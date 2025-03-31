@@ -2,7 +2,9 @@ import { HousePlus, Leaf, Trash2, TreePine, Warehouse } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "../ui/sidebar";
 import { CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import { UserAction } from "@/enums/UserAction";
+import { UserActionType } from "@/enums/UserAction";
+import { UserAction } from "@/models/UserAction";
+import { BuildableType } from "@/enums/BuildableType";
 
 interface Props {
     onResetWorld: () => void;
@@ -29,7 +31,7 @@ export function GameSideBar({onResetWorld, onUserActionStarted}: Props) {
                                     <CollapsibleContent>
                                         <SidebarMenuSub>
                                             <SidebarMenuSubItem>
-                                                <SidebarMenuSubButton onClick={() => onUserActionStarted(UserAction.BuildStockpile)} asChild>
+                                                <SidebarMenuSubButton onClick={() => onUserActionStarted({actionType: UserActionType.Build, buildableType: BuildableType.Stockpile})} asChild>
                                                     <a href={"#"}>
                                                         <Warehouse /> Stockpile
                                                     </a>
@@ -51,14 +53,14 @@ export function GameSideBar({onResetWorld, onUserActionStarted}: Props) {
                                     <CollapsibleContent>
                                         <SidebarMenuSub>
                                             <SidebarMenuSubItem>
-                                                <SidebarMenuSubButton onClick={() => onUserActionStarted(UserAction.PlantTreeSeed)} asChild>
+                                                <SidebarMenuSubButton onClick={() => onUserActionStarted({actionType: UserActionType.Build, buildableType: BuildableType.TreeSeed})} asChild>
                                                     <a href={"#"}>
                                                         <TreePine /> Plant Tree
                                                     </a>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>
                                             <SidebarMenuSubItem>
-                                                <SidebarMenuSubButton onClick={() => onUserActionStarted(UserAction.PlantGrassSeed)} asChild>
+                                                <SidebarMenuSubButton onClick={() => onUserActionStarted({actionType: UserActionType.Build, buildableType: BuildableType.GrassSeed})} asChild>
                                                     <a href={"#"}>
                                                         <Leaf /> Plant Grass
                                                     </a>

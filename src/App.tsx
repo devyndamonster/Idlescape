@@ -9,18 +9,18 @@ import { getClickedActor } from './game/WorldUtils';
 import CharacterDialog from './components/game/characterDialog';
 import { DefaultGameData, GameData } from './models/GameData';
 import { generateInitialGameState, getUpdatedGameState } from './game/GameLogic';
-import { UserAction } from './enums/UserAction';
-import { BuildableType } from './enums/BuildableType';
-import { Structure } from './models/Structure';
+import { UserActionType } from './enums/UserAction';
 import { Actor } from './models/Actor';
 import { Button } from './components/ui/button';
+import { Blueprint } from './models/Blueprint';
+import { UserAction } from './models/UserAction';
 
 function App() {
 
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [userAction, setUserAction] = useState<UserAction | null>(null);
   const gameStateRef = useRef<GameState | null>(null);
-  const queuedBuildActions = useRef<Structure[]>([]);
+  const queuedBuildActions = useRef<Blueprint[]>([]);
   const [gameData] = useState<GameData>(DefaultGameData);
   const [selectedActorUuid, setSelectedActorUuid] = useState<string | null>(null);
   const frameRate = useRef<number>(10);
@@ -41,38 +41,15 @@ function App() {
       const clickedLocation = new Vector2(x, y);
       const clickedActor = getClickedActor(clickedLocation, gameState);
 
-      if(userAction == UserAction.BuildStockpile){
-        const structure: Structure = {
+      if(userAction?.actionType == UserActionType.Build){
+        const blueprintData = gameData.blueprintData[userAction.buildableType];
+
+        queuedBuildActions.current.push({
+          ...blueprintData,
           uuid: crypto.randomUUID(),
           location: clickedLocation,
-          size: 50,
-          icon: '🏠',
-          structureType: BuildableType.Stockpile
-        };
-
-        queuedBuildActions.current.push(structure);
-      }
-      else if(userAction == UserAction.PlantTreeSeed){
-        const structure: Structure = {
-          uuid: crypto.randomUUID(),
-          location: clickedLocation,
-          size: 30,
-          icon: '🌱',
-          structureType: BuildableType.TreeSeed
-        };
-
-        queuedBuildActions.current.push(structure);
-      }
-      else if(userAction == UserAction.PlantGrassSeed){
-        const structure: Structure = {
-          uuid: crypto.randomUUID(),
-          location: clickedLocation,
-          size: 30,
-          icon: '🌱',
-          structureType: BuildableType.GrassSeed
-        };
-
-        queuedBuildActions.current.push(structure);
+          currentItems: {},
+        });
       }
       else if(clickedActor){
         setSelectedActorUuid(clickedActor.uuid);

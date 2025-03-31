@@ -59,7 +59,26 @@ export default function World({ gameState, gameData }: Props)
             context.font = `${structure.size}px serif`;
             context.fillText(structure.icon, structure.location.x, structure.location.y);
         });
-        
+
+        gameStateSnapshot.current.blueprints.forEach(blueprint => {
+            context.font = `${blueprint.size}px serif`;
+            context.fillText(blueprint.icon, blueprint.location.x, blueprint.location.y);
+
+            const totalItemCountRequired = Object.values(blueprint.requiredItems).reduce((a, b) => a + b, 0);
+            const totalItemCountProvided = Object.values(blueprint.currentItems).reduce((a, b) => a + b, 0);
+
+            const progressBarStartX = blueprint.location.x - (blueprint.size / 2);
+            const progressBarStartY = blueprint.location.y + (blueprint.size / 2);
+            const progressBarWidth = blueprint.size;
+            const completedBarWidth = blueprint.size * (totalItemCountProvided / totalItemCountRequired);
+            const progressBarHeight = 5;
+
+            context.fillStyle = 'blue';
+            context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
+
+            context.fillStyle = 'cyan';
+            context.fillRect(progressBarStartX, progressBarStartY, completedBarWidth, progressBarHeight);
+        });
     }, [canvasRef]);
 
     useEffect(() => {

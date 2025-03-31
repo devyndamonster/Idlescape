@@ -5,13 +5,13 @@ import { GameState } from "@/models/GameState";
 import { MathUtils, Vector2 } from "three";
 import { getActorAction, getNewActor, tryAddItemToInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
-import { Structure } from "@/models/Structure";
+import { Blueprint } from "@/models/Blueprint";
 
-export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedStructures: Structure[]): GameState {
+export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedBlueprints: Blueprint[]): GameState {
     
     const updatedGameState: GameState = {
         ...gameState,
-        structures: [...gameState.structures, ...queuedStructures],
+        blueprints: [...gameState.blueprints, ...queuedBlueprints],
     };
     
     const deltaTimeSeconds = getDeltaTimeSeconds(updatedGameState.timestamp);
@@ -73,7 +73,8 @@ export function generateInitialGameState(gameData: GameData): GameState {
         timestamp: Date.now(),
         actors: [],
         resources: [],
-        structures: []
+        structures: [],
+        blueprints: [],
     }
 
     const resourceTypes = Object.values(ResourceType).filter(
