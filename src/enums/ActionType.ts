@@ -1,5 +1,6 @@
 export enum ActionType {
     Idle,
     Move,
-    Collect
+    Collect,
+    InsertItem,
 }

@@ -9,9 +9,11 @@ export interface BlueprintData {
     icon: string;
     size: number;
     requiredItems: { itemType: ItemType; quantity: number }[];
+    buildTimePerItem: number;
     onComplete: (blueprint: Blueprint, gameState: GameState, gameData: GameData) => GameState;
 }
 
 export interface Blueprint extends WorldEntity, BlueprintData {
     currentItems: { itemType: ItemType; quantity: number }[];
+    currentBuildTime: number;
 }

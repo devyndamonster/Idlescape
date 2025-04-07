@@ -100,6 +100,7 @@ const blueprints: Record<BuildableType, BlueprintData> = {
             { itemType: ItemType.Stick, quantity: 10 },
             { itemType: ItemType.Stone, quantity: 10 },
         ],
+        buildTimePerItem: 20,
         onComplete: (blueprint, gameState) => {
             const updatedGameState: GameState = { 
                 ...gameState,
@@ -112,7 +113,8 @@ const blueprints: Record<BuildableType, BlueprintData> = {
                         icon: blueprint.icon,
                         location: blueprint.location,
                     }
-                ]
+                ],
+                blueprints: gameState.blueprints.filter(b => b.uuid !== blueprint.uuid),
              };
 
             return updatedGameState;
@@ -125,6 +127,7 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         requiredItems: [
             { itemType: ItemType.TreeSeed, quantity: 1 },
         ],
+        buildTimePerItem: 5,
         onComplete: (blueprint, gameState, gameData) => {
             const updatedGameState: GameState = { 
                 ...gameState,
@@ -138,7 +141,8 @@ const blueprints: Record<BuildableType, BlueprintData> = {
                         quantityRemaining: gameData.resourceSettings[ResourceType.Tree].initialQuantity,
                         harvestTime: gameData.resourceSettings[ResourceType.Tree].harvestTime,
                     }
-                ]
+                ],
+                blueprints: gameState.blueprints.filter(b => b.uuid !== blueprint.uuid),
              };
 
             return updatedGameState;
@@ -151,6 +155,7 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         requiredItems: [
             { itemType: ItemType.GrassSeed, quantity: 1 },
         ],
+        buildTimePerItem: 5,
         onComplete: (blueprint, gameState, gameData) => {
             const updatedGameState: GameState = { 
                 ...gameState,
@@ -164,7 +169,8 @@ const blueprints: Record<BuildableType, BlueprintData> = {
                         quantityRemaining: gameData.resourceSettings[ResourceType.Grass].initialQuantity,
                         harvestTime: gameData.resourceSettings[ResourceType.Grass].harvestTime,
                     }
-                ]
+                ],
+                blueprints: gameState.blueprints.filter(b => b.uuid !== blueprint.uuid),
              };
 
             return updatedGameState;

@@ -7,6 +7,7 @@ import { getNearestEntity, getNearestResource } from "./WorldUtils";
 import { ResourceType } from "@/enums/ResourceType";
 import { InventoryItem } from "@/models/InventoryItem";
 import { Vector2 } from "three";
+import { getProvidableItems } from "./BlueprintLogic";
 
 export function getNewActor(location: Vector2): Actor {
     return {
@@ -60,26 +61,20 @@ function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState:
 }
 
 function tryBuildStructure(actor: Actor, gameState: GameState): ActorAction | null {
-    const buildableBlueprints = gameState.blueprints.filter(blueprint => {
-        const providableItems = blueprint.requiredItems.filter(requiredItem => {
-            const currentItem = blueprint.currentItems.find(i => i.itemType === requiredItem.itemType);
-            const neededQuantity = requiredItem.quantity - (currentItem?.quantity ?? 0);
-            const itemInInventory = actor.inventory.find(slot => slot.item?.itemType === requiredItem.itemType);
-
-            return neededQuantity > 0 && ((itemInInventory?.quantity ?? 0) > 0);
-        });
-
-        return providableItems.length > 0
-    })
+    const buildableBlueprints = gameState.blueprints.filter(blueprint => getProvidableItems(blueprint, actor).length)
 
     const nearestBlueprint = getNearestEntity(actor.location, buildableBlueprints);
-
     if(!nearestBlueprint) return null;
 
     const distance = actor.location.distanceTo(nearestBlueprint.location);
     if(distance <= nearestBlueprint.size){
+
+        const providableItems = getProvidableItems(nearestBlueprint, actor);
         return {
-            actionType: ActionType.Idle
+            actionType: ActionType.InsertItem,
+            targetUuid: nearestBlueprint.uuid,
+            item: providableItems[0],
+            quantity: 1,
         }
     }
     else{

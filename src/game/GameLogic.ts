@@ -6,10 +6,11 @@ import { MathUtils, Vector2 } from "three";
 import { getActorAction, getNewActor, tryAddItemToInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
 import { Blueprint } from "@/models/Blueprint";
+import { getRemainingRequiredItems } from "./BlueprintLogic";
 
 export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedBlueprints: Blueprint[]): GameState {
     
-    const updatedGameState: GameState = {
+    let updatedGameState: GameState = {
         ...gameState,
         blueprints: [...gameState.blueprints, ...queuedBlueprints],
     };
@@ -18,6 +19,12 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
 
     updatedGameState.timestamp = Date.now();
     updatedGameState.currentTick += 1;
+
+    for(const blueprint of updatedGameState.blueprints){
+        if(blueprint.currentBuildTime > 0){
+            blueprint.currentBuildTime -= deltaTimeSeconds;
+        }
+    }
     
     for(const actor of updatedGameState.actors){
 
@@ -48,6 +55,38 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
         }
         else if(action.actionType == ActionType.Move){
             actor.location.add(action.direction.clone().multiplyScalar(actor.moveSpeed));
+        }
+        else if(action.actionType == ActionType.InsertItem){
+            const targetBlueprint = updatedGameState.blueprints.find(b => b.uuid === action.targetUuid);
+            const inventoryItem = actor.inventory.find(i => i.item?.itemType === action.item.itemType);
+
+            if(targetBlueprint && inventoryItem){
+                if(targetBlueprint.currentBuildTime > 0){
+                    targetBlueprint.currentBuildTime -= deltaTimeSeconds;
+                }
+                else{
+                    inventoryItem.quantity -= 1;
+
+                    const currentItem = targetBlueprint.currentItems.find(i => i.itemType === action.item.itemType);
+                    if(currentItem){
+                        currentItem.quantity += 1;
+                    }
+                    else{
+                        targetBlueprint.currentItems.push({
+                            itemType: action.item.itemType,
+                            quantity: 1,
+                        });
+                    }
+
+                    const remainingRequiredItems = getRemainingRequiredItems(targetBlueprint);
+                    if(remainingRequiredItems.length){
+                        targetBlueprint.currentBuildTime = targetBlueprint.buildTimePerItem;
+                    }
+                    else{
+                        updatedGameState = targetBlueprint.onComplete(targetBlueprint, updatedGameState, gameData);
+                    }
+                }
+            }
         }
     }
 
