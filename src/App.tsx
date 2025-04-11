@@ -49,6 +49,7 @@ function App() {
           uuid: crypto.randomUUID(),
           location: clickedLocation,
           currentItems: [],
+          currentBuildTime: 0,
         });
       }
       else if(clickedActor){
