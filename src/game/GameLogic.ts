@@ -147,6 +147,15 @@ export function getDroppedItemsFromResource(resourceType: ResourceType, gameData
     return droppedItems;
 }
 
+export function loadSVGImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+        img.src = url;
+    });
+}
+
 function generateResource(resourceType: ResourceType, gameData: GameData, gameState: GameState){
     const resourceData = gameData.resourceSettings[resourceType];
     if(resourceData.initialGenerationMin === undefined || resourceData.initialGenerationMax === undefined){

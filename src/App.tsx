@@ -8,7 +8,7 @@ import { Vector2 } from 'three';
 import { getClickedActor } from './game/WorldUtils';
 import CharacterDialog from './components/game/characterDialog';
 import { DefaultGameData, GameData } from './models/GameData';
-import { generateInitialGameState, getUpdatedGameState } from './game/GameLogic';
+import { generateInitialGameState, getUpdatedGameState, loadSVGImage } from './game/GameLogic';
 import { UserActionType } from './enums/UserAction';
 import { Actor } from './models/Actor';
 import { Button } from './components/ui/button';
@@ -21,7 +21,8 @@ function App() {
   const [userAction, setUserAction] = useState<UserAction | null>(null);
   const gameStateRef = useRef<GameState | null>(null);
   const queuedBuildActions = useRef<Blueprint[]>([]);
-  const [gameData] = useState<GameData>(DefaultGameData);
+  const [gameData, setGameData] = useState<GameData>(DefaultGameData);
+  const [isCacheLoaded, setIsCacheLoaded] = useState(false);
   const [selectedActorUuid, setSelectedActorUuid] = useState<string | null>(null);
   const frameRate = useRef<number>(10);
   const nextFrameTime = useRef<number>(0);
@@ -97,12 +98,31 @@ function App() {
     return () => cancelAnimationFrame(frameId);
   }, [runGameLoop]);
 
+  useEffect(() => {
+    const loadCache = async () => {
+      const blueprintIcons = Object.values(gameData.blueprintData).map(blueprint => blueprint.icon);
+      const resourceIcons = Object.values(gameData.resourceSettings).map(resource => resource.icon);
+      const allIcons = new Set<string>([...blueprintIcons, ...resourceIcons, "/Idlescape/StickCharacter.svg"]);
+
+      const imageCache: Record<string, HTMLImageElement> = {};
+      for (const icon of allIcons) {
+        const image = await loadSVGImage(icon);
+        imageCache[icon] = image;
+      }
+
+      setGameData({...gameData, imageCache: imageCache});
+      setIsCacheLoaded(true);
+    }
+
+    loadCache();
+  }, []);
+
   return (
     <>
       <SidebarProvider>
         <GameSideBar onResetWorld={onResetWorld} onUserActionStarted={setUserAction}/>
         <SidebarInset style={{overflow: 'hidden'}}>
-          {gameState && (
+          {gameState && isCacheLoaded && (
             <>
               <ScrollableMap gameState={gameState} gameData={gameData} onClickMap={onClickMap} />
               <CharacterDialog gameState={gameState} selectedActorUuid={selectedActorUuid} onClose={() => setSelectedActorUuid(null)} onActorUpdated={onActorUpdated}/>

@@ -26,8 +26,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         resourceType: ResourceType.Stick,
         initialQuantity: 5,
         harvestTime: 5,
-        size: 20,
-        icon: '🪵',
+        size: 40,
+        icon: '/Idlescape/Stick.svg',
         drops: [
             { itemType: ItemType.Stick, dropChance: 1, dropAmount: 1 },
         ],
@@ -36,8 +36,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         resourceType: ResourceType.Stone,
         initialQuantity: 50,
         harvestTime: 10,
-        size: 20,
-        icon: '🪨',
+        size: 80,
+        icon: '/Idlescape/Rock.svg',
         drops: [
             { itemType: ItemType.Stone, dropChance: 1, dropAmount: 1 },
         ],
@@ -48,8 +48,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         resourceType: ResourceType.Tree,
         initialQuantity: 5,
         harvestTime: 30,
-        size: 40,
-        icon: '🌲',
+        size: 80,
+        icon: '/Idlescape/PineTree.svg',
         drops: [
             { itemType: ItemType.Stick, dropChance: 1, dropAmount: 1 },
             { itemType: ItemType.Stick, dropChance: 0.5, dropAmount: 1 },
@@ -65,8 +65,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         resourceType: ResourceType.Grass,
         initialQuantity: 10,
         harvestTime: 1,
-        size: 20,
-        icon: '🌿',
+        size: 40,
+        icon: '/Idlescape/Grass.svg',
         drops: [
             { itemType: ItemType.GrassSeed, dropChance: 1, dropAmount: 1 },
             { itemType: ItemType.GrassSeed, dropChance: 0.5, dropAmount: 1 },
@@ -79,8 +79,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         resourceType: ResourceType.FallenTree,
         initialQuantity: 1,
         harvestTime: 20,
-        size: 40,
-        icon: '🪵',
+        size: 80,
+        icon: '/Idlescape/Log.svg',
         drops: [
             { itemType: ItemType.Log, dropChance: 1, dropAmount: 3 },
             { itemType: ItemType.Log, dropChance: 0.5, dropAmount: 2 },
@@ -94,8 +94,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
 const blueprints: Record<BuildableType, BlueprintData> = {
     [BuildableType.Stockpile]: {
         buildableType: BuildableType.Stockpile,
-        icon: '🏠',
-        size: 50,
+        icon: '/Idlescape/Stockpile.svg',
+        size: 100,
         requiredItems: [
             { itemType: ItemType.Stick, quantity: 10 },
             { itemType: ItemType.Stone, quantity: 10 },
@@ -122,8 +122,8 @@ const blueprints: Record<BuildableType, BlueprintData> = {
     },
     [BuildableType.TreeSeed]: {
         buildableType: BuildableType.TreeSeed,
-        icon: '🌱',
-        size: 30,
+        icon: '/Idlescape/Seedling.svg',
+        size: 60,
         requiredItems: [
             { itemType: ItemType.TreeSeed, quantity: 1 },
         ],
@@ -150,8 +150,8 @@ const blueprints: Record<BuildableType, BlueprintData> = {
     },
     [BuildableType.GrassSeed]: {
         buildableType: BuildableType.GrassSeed,
-        icon: '🌱',
-        size: 30,
+        icon: '/Idlescape/Seedling.svg',
+        size: 60,
         requiredItems: [
             { itemType: ItemType.GrassSeed, quantity: 1 },
         ],
@@ -183,12 +183,14 @@ export interface GameData {
     worldHeight: number;
     resourceSettings: Record<ResourceType, ResourceSetting>;
     blueprintData: Record<BuildableType, BlueprintData>;
+    imageCache: Record<string, HTMLImageElement>;
 }
 
 export const DefaultGameData: GameData = {
-    worldWidth: 1000,
-    worldHeight: 1000,
+    worldWidth: 2000,
+    worldHeight: 2000,
     resourceSettings: resourceSettings,
     blueprintData: blueprints,
+    imageCache: {},
 }
 

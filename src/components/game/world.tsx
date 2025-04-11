@@ -34,15 +34,20 @@ export default function World({ gameState, gameData }: Props)
         context.font = "48px serif";
         context.fillText(`${gameStateSnapshot.current.currentTick}`, 50, 50);
 
+        console.log(gameDataSnapshot.current.imageCache);
+
         gameStateSnapshot.current.actors.forEach(actor => {
-            context.font = `${actor.size}px serif`;
-            context.fillText('🙂', actor.location.x, actor.location.y);
+            const x = actor.location.x - actor.size / 2;
+            const y = actor.location.y - actor.size / 2;
+            context.drawImage(gameDataSnapshot.current.imageCache["/Idlescape/StickCharacter.svg"], x, y, actor.size, actor.size);
         });
 
         gameStateSnapshot.current.resources.forEach(resource => {
             const resourceData = gameDataSnapshot.current.resourceSettings[resource.resourceType];
-            context.font = `${resource.size}px serif`;
-            context.fillText(resourceData.icon, resource.location.x, resource.location.y);
+
+            const x = resource.location.x - resource.size / 2;
+            const y = resource.location.y - resource.size / 2;
+            context.drawImage(gameDataSnapshot.current.imageCache[resourceData.icon], x, y, resource.size, resource.size);
 
             if(resource.quantityRemaining < resourceData.initialQuantity){
                 const progressBarStartX = resource.location.x - (resource.size / 2);
@@ -56,13 +61,15 @@ export default function World({ gameState, gameData }: Props)
         });
 
         gameStateSnapshot.current.structures.forEach(structure => {
-            context.font = `${structure.size}px serif`;
-            context.fillText(structure.icon, structure.location.x, structure.location.y);
+            const x = structure.location.x - structure.size / 2;
+            const y = structure.location.y - structure.size / 2;
+            context.drawImage(gameDataSnapshot.current.imageCache[structure.icon], x, y, structure.size, structure.size);
         });
 
         gameStateSnapshot.current.blueprints.forEach(blueprint => {
-            context.font = `${blueprint.size}px serif`;
-            context.fillText(blueprint.icon, blueprint.location.x, blueprint.location.y);
+            const x = blueprint.location.x - blueprint.size / 2;
+            const y = blueprint.location.y - blueprint.size / 2;
+            context.drawImage(gameDataSnapshot.current.imageCache[blueprint.icon], x, y, blueprint.size, blueprint.size);
 
             const totalItemCountRequired = blueprint.requiredItems.reduce((a, b) => a + b.quantity, 0);
             const totalItemCountProvided = blueprint.currentItems.reduce((a, b) => a + b.quantity, 0);
@@ -114,7 +121,7 @@ export default function World({ gameState, gameData }: Props)
             width={gameData.worldWidth} 
             height={gameData.worldHeight}
             style={{
-                backgroundColor: 'green',
+                backgroundColor: '#78bf26',
                 display: 'block',
                 margin: '0 auto',
                 width: `${gameData.worldWidth}px`,

@@ -13,7 +13,7 @@ export function getNewActor(location: Vector2): Actor {
     return {
         location: location,
         moveSpeed: 2,
-        size: 20,
+        size: 80,
         harvestProgress: 0,
         uuid: crypto.randomUUID(),
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
