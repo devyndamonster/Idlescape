@@ -1,5 +1,5 @@
 import { ActionType } from "@/enums/ActionType";
-import { Resource } from "./Resource";
+import { Resource } from "./entities/Resource";
 import { Vector2 } from "three";
 import { InventoryItem } from "./InventoryItem";
 

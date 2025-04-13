@@ -6,7 +6,7 @@ import { Vector2 } from 'three';
 import { getClickedActor } from './game/WorldUtils';
 import CharacterDialog from './components/game/characterDialog';
 import { UserActionType } from './enums/UserAction';
-import { Actor } from './models/Actor';
+import { Actor } from './models/entities/Actor';
 import { Button } from './components/ui/button';
 import { UserAction } from './models/UserAction';
 import { GameUpdateType, useGameData, useGameState, useGameUpdateQueue } from './game/GameContext';

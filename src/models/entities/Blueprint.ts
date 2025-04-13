@@ -1,8 +1,9 @@
 import { BuildableType } from "@/enums/BuildableType";
-import { GameData } from "./GameData";
-import { GameState } from "./GameState";
-import { WorldEntity } from "./WorldEntity";
+import { GameData } from "../GameData";
+import { GameState } from "../GameState";
 import { ItemType } from "@/enums/ItemType";
+import { RenderableEntity } from "./RenderableEntity";
+import { EntityType } from "@/enums/EntityType";
 
 export interface BlueprintData {
     buildableType: BuildableType;
@@ -13,7 +14,8 @@ export interface BlueprintData {
     onComplete: (blueprint: Blueprint, gameState: GameState, gameData: GameData) => GameState;
 }
 
-export interface Blueprint extends WorldEntity, BlueprintData {
+export interface Blueprint extends RenderableEntity, BlueprintData {
+    entityType: EntityType.Blueprint;
     currentItems: { itemType: ItemType; quantity: number }[];
     currentBuildTime: number;
 }

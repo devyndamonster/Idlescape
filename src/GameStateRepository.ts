@@ -11,10 +11,7 @@ export function getGameState(): GameState {
     return {
         currentTick: 0,
         timestamp: Date.now(),
-        actors: [],
-        resources: [],
-        structures: [],
-        blueprints: [],
+        entities: [],
     };
 }
 

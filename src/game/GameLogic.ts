@@ -1,18 +1,20 @@
 import { ActionType } from "@/enums/ActionType";
 import { ResourceType } from "@/enums/ResourceType";
 import { GameData } from "@/models/GameData";
-import { GameState } from "@/models/GameState";
+import { GameState, getActors, getBlueprints, getResources } from "@/models/GameState";
 import { MathUtils, Vector2 } from "three";
 import { getActorAction, getNewActor, tryAddItemToInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
 import { getRemainingRequiredItems } from "./BlueprintLogic";
 import { GameUpdate, GameUpdateType } from "./GameContext";
+import { EntityType } from "@/enums/EntityType";
 
 function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: GameUpdate){
     if(gameUpdate.updateType == GameUpdateType.BuildAction){
         const blueprintData = gameData.blueprintData[gameUpdate.buildableType];
-        gameState.blueprints.push({
+        gameState.entities.push({
             ...blueprintData,
+            entityType: EntityType.Blueprint,
             uuid: crypto.randomUUID(),
             location: gameUpdate.location,
             currentItems: [],
@@ -20,7 +22,7 @@ function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: G
         });
     }
     else if(gameUpdate.updateType == GameUpdateType.UpdateActor){
-        gameState.actors = gameState.actors.map(actor => actor.uuid === gameUpdate.actorUuid ? gameUpdate.updatedActor : actor);
+        gameState.entities = gameState.entities.map(entity => entity.uuid === gameUpdate.actorUuid ? gameUpdate.updatedActor : entity);
     }
 }
 
@@ -39,18 +41,21 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
     updatedGameState.timestamp = Date.now();
     updatedGameState.currentTick += 1;
 
-    for(const blueprint of updatedGameState.blueprints){
+    const blueprints = getBlueprints(updatedGameState);
+    for(const blueprint of blueprints){
         if(blueprint.currentBuildTime > 0){
             blueprint.currentBuildTime -= deltaTimeSeconds;
         }
     }
     
-    for(const actor of updatedGameState.actors){
+    const actors = getActors(updatedGameState);
+    const resources = getResources(updatedGameState);
+    for(const actor of actors){
 
         const action = getActorAction(actor, updatedGameState);
         if(action.actionType == ActionType.Collect){
 
-            const targetResource = updatedGameState.resources.find(r => r.uuid === action.targetResource.uuid);
+            const targetResource = resources.find(r => r.uuid === action.targetResource.uuid);
             if(targetResource){
                 
                 const harvestDelta = deltaTimeSeconds / targetResource.harvestTime;
@@ -67,7 +72,7 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
                     
                     targetResource.quantityRemaining -= 1;
                     if(targetResource.quantityRemaining <= 0){
-                        updatedGameState.resources = updatedGameState.resources.filter(r => r.uuid !== targetResource.uuid);
+                        updatedGameState.entities = updatedGameState.entities.filter(r => r.uuid !== targetResource.uuid);
                     }
                 }
             }
@@ -76,7 +81,7 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
             actor.location.add(action.direction.clone().multiplyScalar(actor.moveSpeed));
         }
         else if(action.actionType == ActionType.InsertItem){
-            const targetBlueprint = updatedGameState.blueprints.find(b => b.uuid === action.targetUuid);
+            const targetBlueprint = blueprints.find(b => b.uuid === action.targetUuid);
             const inventoryItem = actor.inventory.find(i => i.item?.itemType === action.item.itemType);
 
             if(targetBlueprint && inventoryItem){
@@ -112,9 +117,11 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
     const chanceOfResourceSpawn = 0.01;
     if(Math.random() < chanceOfResourceSpawn){
         const resourceData = gameData.resourceSettings[ResourceType.Stick];
-        updatedGameState.resources.push({
+        updatedGameState.entities.push({
+            entityType: EntityType.Resource,
             uuid: crypto.randomUUID(),
             location: new Vector2(Math.random() * 1000, Math.random() * 1000),
+            icon: resourceData.icon,
             quantityRemaining: resourceData.initialQuantity,
             size: resourceData.size,
             harvestTime: resourceData.harvestTime,
@@ -129,10 +136,7 @@ export function generateInitialGameState(gameData: GameData): GameState {
     let initialGameState: GameState = {
         currentTick: 0,
         timestamp: Date.now(),
-        actors: [],
-        resources: [],
-        structures: [],
-        blueprints: [],
+        entities: [],
     }
 
     const resourceTypes = Object.values(ResourceType).filter(
@@ -144,10 +148,8 @@ export function generateInitialGameState(gameData: GameData): GameState {
     }
 
     const initialActor = getNewActor(new Vector2(500, 500));
-    initialGameState.actors.push(initialActor);
+    initialGameState.entities.push(initialActor);
 
-    console.log(initialGameState);
-    
     return initialGameState;
 }
 
@@ -188,15 +190,18 @@ function generateResource(resourceType: ResourceType, gameData: GameData, gameSt
             const locationY = MathUtils.randFloat(0, gameData.worldHeight);
             const location = new Vector2(locationX, locationY);
 
-            const isLocationValid = gameState.resources.every(resource => resource.location.distanceTo(location) > resource.size);
+            const isLocationValid = getResources(gameState).every(resource => resource.location.distanceTo(location) > resource.size);
             if(isLocationValid){
-                gameState.resources.push({
+                const resourceData = gameData.resourceSettings[resourceType];
+                gameState.entities.push({
+                    entityType: EntityType.Resource,
                     uuid: crypto.randomUUID(),
                     location: location,
-                    quantityRemaining: gameData.resourceSettings[resourceType].initialQuantity,
-                    size: gameData.resourceSettings[resourceType].size,
-                    harvestTime: gameData.resourceSettings[resourceType].harvestTime,
-                    resourceType: resourceType,
+                    icon: resourceData.icon,
+                    quantityRemaining: resourceData.initialQuantity,
+                    size: resourceData.size,
+                    harvestTime: resourceData.harvestTime,
+                    resourceType: resourceData.resourceType,
                 });
                 break;
             }

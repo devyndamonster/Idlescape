@@ -1,19 +1,22 @@
 import { ActionType } from "@/enums/ActionType";
 import { ObjectiveType } from "@/enums/ObjectiveType";
-import { Actor } from "@/models/Actor";
+import { Actor } from "@/models/entities/Actor";
 import { ActorAction } from "@/models/ActorAction";
-import { GameState } from "@/models/GameState";
+import { GameState, getBlueprints } from "@/models/GameState";
 import { getNearestEntity, getNearestResource } from "./WorldUtils";
 import { ResourceType } from "@/enums/ResourceType";
 import { InventoryItem } from "@/models/InventoryItem";
 import { Vector2 } from "three";
 import { getProvidableItems } from "./BlueprintLogic";
+import { EntityType } from "@/enums/EntityType";
 
 export function getNewActor(location: Vector2): Actor {
     return {
+        entityType: EntityType.Actor,
         location: location,
         moveSpeed: 2,
         size: 80,
+        icon: "/Idlescape/StickCharacter.svg",
         harvestProgress: 0,
         uuid: crypto.randomUUID(),
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
@@ -61,7 +64,7 @@ function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState:
 }
 
 function tryBuildStructure(actor: Actor, gameState: GameState): ActorAction | null {
-    const buildableBlueprints = gameState.blueprints.filter(blueprint => getProvidableItems(blueprint, actor).length)
+    const buildableBlueprints = getBlueprints(gameState).filter(blueprint => getProvidableItems(blueprint, actor).length)
 
     const nearestBlueprint = getNearestEntity(actor.location, buildableBlueprints);
     if(!nearestBlueprint) return null;

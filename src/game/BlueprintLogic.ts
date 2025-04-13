@@ -1,5 +1,5 @@
-import { Actor } from "@/models/Actor";
-import { Blueprint } from "@/models/Blueprint";
+import { Actor } from "@/models/entities/Actor";
+import { Blueprint } from "@/models/entities/Blueprint";
 import { InventoryItem } from "@/models/InventoryItem";
 
 export function getProvidableItems(blueprint: Blueprint, actor: Actor): InventoryItem[] {

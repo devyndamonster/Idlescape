@@ -1,12 +1,12 @@
 import { ResourceType } from "@/enums/ResourceType";
-import { Actor } from "@/models/Actor";
-import { GameState } from "@/models/GameState";
-import { Resource } from "@/models/Resource";
-import { WorldEntity } from "@/models/WorldEntity";
+import { Actor } from "@/models/entities/Actor";
+import { GameState, getActors, getResources } from "@/models/GameState";
+import { Resource } from "@/models/entities/Resource";
+import { WorldEntity } from "@/models/entities/WorldEntity";
 import { Vector2 } from "three";
 
 export function getNearestResource(startLocation: Vector2, resourceType: ResourceType, gameState: GameState): Resource | null {
-    const resources = gameState.resources.filter(resource => resource.resourceType === resourceType);
+    const resources = getResources(gameState).filter(resource => resource.resourceType === resourceType);
     return getNearestEntity(startLocation, resources);
 }
 
@@ -26,7 +26,8 @@ export function getNearestEntity<T extends WorldEntity>(startLocation: Vector2, 
 }
 
 export function getClickedActor(clickLocation: Vector2, gameState: GameState): Actor | null {
-    for(const actor of gameState.actors) {
+    const actors = getActors(gameState);
+    for(const actor of actors) {
         if(actor.location.distanceTo(clickLocation) < actor.size) {
             return actor;
         }

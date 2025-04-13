@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { GameState } from "../../models/GameState";
 import { GameData } from "@/models/GameData";
+import { EntityType } from "@/enums/EntityType";
 
 interface Props {
     gameState: GameState;
@@ -34,55 +35,41 @@ export default function World({ gameState, gameData }: Props)
         context.font = "48px serif";
         context.fillText(`${gameStateSnapshot.current.currentTick}`, 50, 50);
 
-        gameStateSnapshot.current.actors.forEach(actor => {
-            const x = actor.location.x - actor.size / 2;
-            const y = actor.location.y - actor.size / 2;
-            context.drawImage(gameDataSnapshot.current.imageCache["/Idlescape/StickCharacter.svg"], x, y, actor.size, actor.size);
-        });
+        gameStateSnapshot.current.entities.forEach(entity => {
+            const x = entity.location.x - entity.size / 2;
+            const y = entity.location.y - entity.size / 2;
+            context.drawImage(gameDataSnapshot.current.imageCache[entity.icon], x, y, entity.size, entity.size);
 
-        gameStateSnapshot.current.resources.forEach(resource => {
-            const resourceData = gameDataSnapshot.current.resourceSettings[resource.resourceType];
+            if(entity.entityType == EntityType.Resource){
+                const resourceData = gameDataSnapshot.current.resourceSettings[entity.resourceType];
 
-            const x = resource.location.x - resource.size / 2;
-            const y = resource.location.y - resource.size / 2;
-            context.drawImage(gameDataSnapshot.current.imageCache[resourceData.icon], x, y, resource.size, resource.size);
-
-            if(resource.quantityRemaining < resourceData.initialQuantity){
-                const progressBarStartX = resource.location.x - (resource.size / 2);
-                const progressBarStartY = resource.location.y + (resource.size / 2);
-                const progressBarWidth = resource.size * (resource.quantityRemaining / resourceData.initialQuantity);
-                const progressBarHeight = 5;
-    
-                context.fillStyle = 'lime';
-                context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
+                if(entity.quantityRemaining < resourceData.initialQuantity){
+                    const progressBarStartX = entity.location.x - (entity.size / 2);
+                    const progressBarStartY = entity.location.y + (entity.size / 2);
+                    const progressBarWidth = entity.size * (entity.quantityRemaining / resourceData.initialQuantity);
+                    const progressBarHeight = 5;
+        
+                    context.fillStyle = 'lime';
+                    context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
+                }
             }
-        });
 
-        gameStateSnapshot.current.structures.forEach(structure => {
-            const x = structure.location.x - structure.size / 2;
-            const y = structure.location.y - structure.size / 2;
-            context.drawImage(gameDataSnapshot.current.imageCache[structure.icon], x, y, structure.size, structure.size);
-        });
+            else if(entity.entityType == EntityType.Blueprint){
+                const totalItemCountRequired = entity.requiredItems.reduce((a, b) => a + b.quantity, 0);
+                const totalItemCountProvided = entity.currentItems.reduce((a, b) => a + b.quantity, 0);
 
-        gameStateSnapshot.current.blueprints.forEach(blueprint => {
-            const x = blueprint.location.x - blueprint.size / 2;
-            const y = blueprint.location.y - blueprint.size / 2;
-            context.drawImage(gameDataSnapshot.current.imageCache[blueprint.icon], x, y, blueprint.size, blueprint.size);
+                const progressBarStartX = entity.location.x - (entity.size / 2);
+                const progressBarStartY = entity.location.y + (entity.size / 2);
+                const progressBarWidth = entity.size;
+                const completedBarWidth = entity.size * (totalItemCountProvided / totalItemCountRequired);
+                const progressBarHeight = 5;
 
-            const totalItemCountRequired = blueprint.requiredItems.reduce((a, b) => a + b.quantity, 0);
-            const totalItemCountProvided = blueprint.currentItems.reduce((a, b) => a + b.quantity, 0);
+                context.fillStyle = 'blue';
+                context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
 
-            const progressBarStartX = blueprint.location.x - (blueprint.size / 2);
-            const progressBarStartY = blueprint.location.y + (blueprint.size / 2);
-            const progressBarWidth = blueprint.size;
-            const completedBarWidth = blueprint.size * (totalItemCountProvided / totalItemCountRequired);
-            const progressBarHeight = 5;
-
-            context.fillStyle = 'blue';
-            context.fillRect(progressBarStartX, progressBarStartY, progressBarWidth, progressBarHeight);
-
-            context.fillStyle = 'cyan';
-            context.fillRect(progressBarStartX, progressBarStartY, completedBarWidth, progressBarHeight);
+                context.fillStyle = 'cyan';
+                context.fillRect(progressBarStartX, progressBarStartY, completedBarWidth, progressBarHeight);
+            }
         });
     }, [canvasRef]);
 

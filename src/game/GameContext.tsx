@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { generateInitialGameState, getUpdatedGameState, loadSVGImage } from './GameLogic';
 import { BuildableType } from '@/enums/BuildableType';
 import { Vector2 } from 'three';
-import { Actor } from '@/models/Actor';
+import { Actor } from '@/models/entities/Actor';
 
 export const GameStateContext = createContext<GameState | undefined>(undefined);
 export const GameDataContext = createContext<GameData | undefined>(undefined);
@@ -18,7 +18,7 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
   const [gameData, setGameData] = useState<GameData | undefined>(undefined);
   const gameDataRef = useRef<GameData | undefined>(undefined);
   const gameUpdates = useRef<GameUpdate[]>([]);
-  const frameRate = useRef<number>(10);
+  const frameRate = useRef<number>(16);
   const nextFrameTime = useRef<number>(0);
 
   const queueGameUpdate = (gameUpdate: GameUpdate) => {

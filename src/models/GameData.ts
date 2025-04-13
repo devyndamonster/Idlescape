@@ -1,8 +1,9 @@
 import { BuildableType } from "@/enums/BuildableType";
 import { ItemType } from "@/enums/ItemType";
 import { ResourceType } from "@/enums/ResourceType";
-import { BlueprintData } from "./Blueprint";
+import { BlueprintData } from "./entities/Blueprint";
 import { GameState } from "./GameState";
+import { EntityType } from "@/enums/EntityType";
 
 interface ResourceSetting {
     resourceType: ResourceType;
@@ -104,9 +105,10 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         onComplete: (blueprint, gameState) => {
             const updatedGameState: GameState = { 
                 ...gameState,
-                structures: [
-                    ...gameState.structures,
+                entities: [
+                    ...gameState.entities.filter(e => e.uuid !== blueprint.uuid),
                     {
+                        entityType: EntityType.Structure,
                         structureType: BuildableType.Stockpile,
                         uuid: blueprint.uuid,
                         size: blueprint.size,
@@ -114,7 +116,6 @@ const blueprints: Record<BuildableType, BlueprintData> = {
                         location: blueprint.location,
                     }
                 ],
-                blueprints: gameState.blueprints.filter(b => b.uuid !== blueprint.uuid),
              };
 
             return updatedGameState;
@@ -129,20 +130,22 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         ],
         buildTimePerItem: 5,
         onComplete: (blueprint, gameState, gameData) => {
+            const resourceData = gameData.resourceSettings[ResourceType.Tree];
             const updatedGameState: GameState = { 
                 ...gameState,
-                resources: [
-                    ...gameState.resources,
+                entities: [
+                    ...gameState.entities.filter(b => b.uuid !== blueprint.uuid),
                     {
-                        resourceType: ResourceType.Tree,
+                        entityType: EntityType.Resource,
                         uuid: blueprint.uuid,
-                        size: blueprint.size,
                         location: blueprint.location,
-                        quantityRemaining: gameData.resourceSettings[ResourceType.Tree].initialQuantity,
-                        harvestTime: gameData.resourceSettings[ResourceType.Tree].harvestTime,
+                        icon: resourceData.icon,
+                        resourceType: resourceData.resourceType,
+                        size: resourceData.size,
+                        quantityRemaining: resourceData.initialQuantity,
+                        harvestTime: resourceData.harvestTime,
                     }
                 ],
-                blueprints: gameState.blueprints.filter(b => b.uuid !== blueprint.uuid),
              };
 
             return updatedGameState;
@@ -157,20 +160,22 @@ const blueprints: Record<BuildableType, BlueprintData> = {
         ],
         buildTimePerItem: 5,
         onComplete: (blueprint, gameState, gameData) => {
+            const resourceData = gameData.resourceSettings[ResourceType.Grass];
             const updatedGameState: GameState = { 
                 ...gameState,
-                resources: [
-                    ...gameState.resources,
+                entities: [
+                    ...gameState.entities.filter(b => b.uuid !== blueprint.uuid),
                     {
-                        resourceType: ResourceType.Grass,
+                        entityType: EntityType.Resource,
                         uuid: blueprint.uuid,
-                        size: blueprint.size,
                         location: blueprint.location,
-                        quantityRemaining: gameData.resourceSettings[ResourceType.Grass].initialQuantity,
-                        harvestTime: gameData.resourceSettings[ResourceType.Grass].harvestTime,
+                        icon: resourceData.icon,
+                        resourceType: resourceData.resourceType,
+                        size: resourceData.size,
+                        quantityRemaining: resourceData.initialQuantity,
+                        harvestTime: resourceData.harvestTime,
                     }
                 ],
-                blueprints: gameState.blueprints.filter(b => b.uuid !== blueprint.uuid),
              };
 
             return updatedGameState;

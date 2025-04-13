@@ -1,11 +1,11 @@
-import { GameState } from "@/models/GameState";
+import { GameState, getActors } from "@/models/GameState";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Progress } from "../ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { Actor } from "@/models/Actor";
+import { Actor } from "@/models/entities/Actor";
 import { Objective } from "@/models/Objective";
 import ObjectiveSelect from "./objectiveSelect";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
@@ -20,7 +20,7 @@ interface Props {
 
 export default function CharacterDialog({gameState, selectedActorUuid, onClose, onActorUpdated}: Props) {
 
-    const selectedActor = gameState.actors.find(actor => actor.uuid === selectedActorUuid);
+    const selectedActor = getActors(gameState).find(actor => actor.uuid === selectedActorUuid);
     
     if(selectedActor == undefined){
         return null;
