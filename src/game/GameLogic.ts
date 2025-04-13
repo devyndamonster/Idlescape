@@ -5,15 +5,34 @@ import { GameState } from "@/models/GameState";
 import { MathUtils, Vector2 } from "three";
 import { getActorAction, getNewActor, tryAddItemToInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
-import { Blueprint } from "@/models/Blueprint";
 import { getRemainingRequiredItems } from "./BlueprintLogic";
+import { GameUpdate, GameUpdateType } from "./GameContext";
 
-export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedBlueprints: Blueprint[]): GameState {
+function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: GameUpdate){
+    if(gameUpdate.updateType == GameUpdateType.BuildAction){
+        const blueprintData = gameData.blueprintData[gameUpdate.buildableType];
+        gameState.blueprints.push({
+            ...blueprintData,
+            uuid: crypto.randomUUID(),
+            location: gameUpdate.location,
+            currentItems: [],
+            currentBuildTime: 0,
+        });
+    }
+    else if(gameUpdate.updateType == GameUpdateType.UpdateActor){
+        gameState.actors = gameState.actors.map(actor => actor.uuid === gameUpdate.actorUuid ? gameUpdate.updatedActor : actor);
+    }
+}
+
+export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedUpdates: GameUpdate[]): GameState {
     
     let updatedGameState: GameState = {
-        ...gameState,
-        blueprints: [...gameState.blueprints, ...queuedBlueprints],
+        ...gameState
     };
+
+    for(const gameUpdate of queuedUpdates){
+        applyGameUpdate(updatedGameState, gameData, gameUpdate);
+    }
     
     const deltaTimeSeconds = getDeltaTimeSeconds(updatedGameState.timestamp);
 

@@ -34,8 +34,6 @@ export default function World({ gameState, gameData }: Props)
         context.font = "48px serif";
         context.fillText(`${gameStateSnapshot.current.currentTick}`, 50, 50);
 
-        console.log(gameDataSnapshot.current.imageCache);
-
         gameStateSnapshot.current.actors.forEach(actor => {
             const x = actor.location.x - actor.size / 2;
             const y = actor.location.y - actor.size / 2;
