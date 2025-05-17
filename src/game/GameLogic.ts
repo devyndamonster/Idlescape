@@ -3,11 +3,12 @@ import { ResourceType } from "@/enums/ResourceType";
 import { GameData } from "@/models/GameData";
 import { GameState, getActors, getBlueprints, getResources } from "@/models/GameState";
 import { MathUtils, Vector2 } from "three";
-import { getActorAction, getNewActor, tryAddItemToInventory } from "./ActorLogic";
+import { getActorAction, getNewActor, tryAddItemToInventory, tryGrabItemQuantityFromInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
 import { getRemainingRequiredItems } from "./BlueprintLogic";
 import { GameUpdate, GameUpdateType } from "./GameContext";
 import { EntityType } from "@/enums/EntityType";
+import { ItemType } from "@/enums/ItemType";
 
 function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: GameUpdate){
     if(gameUpdate.updateType == GameUpdateType.BuildAction){
@@ -55,11 +56,21 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
         actor.hunger -= gameData.hungerDecreasePerSecond * deltaTimeSeconds;
         actor.thirst -= gameData.thirstDecreasePerSecond * deltaTimeSeconds;
 
+        if(actor.hunger <= 0 || actor.thirst <= 0){
+            const quantityFood = tryGrabItemQuantityFromInventory(actor, ItemType.Blueberry, 1);
+            if(quantityFood > 0){
+                actor.hunger += 0.5;
+                actor.thirst += 0.5;
+            }
+        }
+
         if(actor.hunger <= 0){
+            actor.hunger = 0;
             actor.health -= gameData.hungerDamagePerSecond * deltaTimeSeconds;
         }
 
         if(actor.thirst <= 0){
+            actor.thirst = 0;
             actor.health -= gameData.thirstDamagePerSecond * deltaTimeSeconds;
         }
 

@@ -9,6 +9,7 @@ import { InventoryItem } from "@/models/InventoryItem";
 import { Vector2 } from "three";
 import { getProvidableItems } from "./BlueprintLogic";
 import { EntityType } from "@/enums/EntityType";
+import { ItemType } from "@/enums/ItemType";
 
 export function getNewActor(location: Vector2): Actor {
     return {
@@ -108,4 +109,26 @@ export function tryAddItemToInventory(actor: Actor, item: InventoryItem): boolea
     }
 
     return false;
+}
+
+export function tryGrabItemQuantityFromInventory(actor: Actor, itemType: ItemType, quantity: number): number {
+    let remainingQuantityToRemove = quantity;
+
+    for(const slot of actor.inventory) {
+        if(slot.item?.itemType === itemType) {
+            const quantityToRemove = Math.min(slot.quantity, remainingQuantityToRemove);
+            remainingQuantityToRemove -= quantityToRemove;
+            slot.quantity -= quantityToRemove;
+
+            if(slot.quantity <= 0) {
+                slot.item = null;
+            }
+
+            if(remainingQuantityToRemove <= 0){
+                break;
+            }
+        }
+    }
+
+    return quantity - remainingQuantityToRemove;
 }
