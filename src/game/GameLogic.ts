@@ -52,6 +52,23 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
     const resources = getResources(updatedGameState);
     for(const actor of actors){
 
+        actor.hunger -= gameData.hungerDecreasePerSecond * deltaTimeSeconds;
+        actor.thirst -= gameData.thirstDecreasePerSecond * deltaTimeSeconds;
+
+        if(actor.hunger <= 0){
+            actor.health -= gameData.hungerDamagePerSecond * deltaTimeSeconds;
+        }
+        if(actor.thirst <= 0){
+            actor.health -= gameData.thirstDamagePerSecond * deltaTimeSeconds;
+        }
+
+        if(actor.hunger > 0 && actor.thirst > 0){
+            actor.health += gameData.healthRegenerationPerSecond * deltaTimeSeconds;
+            if(actor.health > actor.maxHealth){
+                actor.health = actor.maxHealth;
+            }
+        }
+
         const action = getActorAction(actor, updatedGameState);
         if(action.actionType == ActionType.Collect){
 

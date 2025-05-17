@@ -52,6 +52,24 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
                                     <Input disabled id="actor-id" value={selectedActor.uuid} className="col-span-3" />
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="actor-health" className="text-right">
+                                        Health
+                                    </Label>
+                                    <Progress id="actor-health" value={(selectedActor.health / selectedActor.maxHealth) * 100} className="col-span-3" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="actor-hunger" className="text-right">
+                                        Hunger
+                                    </Label>
+                                    <Progress id="actor-hunger" value={selectedActor.hunger * 100} className="col-span-3" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="actor-thirst" className="text-right">
+                                        Thirst
+                                    </Label>
+                                    <Progress id="actor-thirst" value={selectedActor.thirst * 100} className="col-span-3" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="actor-harvest-progress" className="text-right">
                                         Harvest Progress
                                     </Label>

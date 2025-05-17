@@ -9,4 +9,8 @@ export interface Actor extends RenderableEntity {
     currentObjective: Objective;
     moveSpeed: number;
     harvestProgress: number;
+    hunger: number;
+    thirst: number;
+    health: number;
+    maxHealth: number;
 }

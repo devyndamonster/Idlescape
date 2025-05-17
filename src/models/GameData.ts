@@ -189,6 +189,11 @@ export interface GameData {
     resourceSettings: Record<ResourceType, ResourceSetting>;
     blueprintData: Record<BuildableType, BlueprintData>;
     imageCache: Record<string, HTMLImageElement>;
+    hungerDecreasePerSecond: number;
+    thirstDecreasePerSecond: number;
+    hungerDamagePerSecond: number;
+    thirstDamagePerSecond: number;
+    healthRegenerationPerSecond: number;
 }
 
 export const DefaultGameData: GameData = {
@@ -197,5 +202,10 @@ export const DefaultGameData: GameData = {
     resourceSettings: resourceSettings,
     blueprintData: blueprints,
     imageCache: {},
+    hungerDecreasePerSecond: 0.01,
+    thirstDecreasePerSecond: 0.01,
+    hungerDamagePerSecond: 0.1,
+    thirstDamagePerSecond: 0.1,
+    healthRegenerationPerSecond: 0.1,
 }
 

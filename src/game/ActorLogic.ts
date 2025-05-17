@@ -18,6 +18,10 @@ export function getNewActor(location: Vector2): Actor {
         size: 80,
         icon: "/Idlescape/StickCharacter.svg",
         harvestProgress: 0,
+        hunger: 1,
+        thirst: 1,
+        health: 100,
+        maxHealth: 100,
         uuid: crypto.randomUUID(),
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
         currentObjective: {
