@@ -7,4 +7,6 @@ export interface Resource extends RenderableEntity {
     resourceType: ResourceType;
     quantityRemaining: number;
     harvestTime: number;
+    timeLastHarvested?: number;
+    timeLastRegrowth?: number;
 }

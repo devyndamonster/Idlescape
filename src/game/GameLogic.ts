@@ -58,6 +58,7 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
         if(actor.hunger <= 0){
             actor.health -= gameData.hungerDamagePerSecond * deltaTimeSeconds;
         }
+
         if(actor.thirst <= 0){
             actor.health -= gameData.thirstDamagePerSecond * deltaTimeSeconds;
         }
@@ -73,8 +74,9 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
         if(action.actionType == ActionType.Collect){
 
             const targetResource = resources.find(r => r.uuid === action.targetResource.uuid);
-            if(targetResource){
-                
+
+            if(targetResource && targetResource.quantityRemaining > 0)
+            {
                 const harvestDelta = deltaTimeSeconds / targetResource.harvestTime;
                 actor.harvestProgress += harvestDelta;
 
@@ -86,9 +88,11 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
                     for (const item of harvestedItems) {
                         tryAddItemToInventory(actor, item);
                     }
-                    
+
+                    const resourceData = gameData.resourceSettings[targetResource.resourceType];
                     targetResource.quantityRemaining -= 1;
-                    if(targetResource.quantityRemaining <= 0){
+                    targetResource.timeLastHarvested = Date.now();
+                    if(targetResource.quantityRemaining <= 0 && resourceData.destroyOnDepleted){
                         updatedGameState.entities = updatedGameState.entities.filter(r => r.uuid !== targetResource.uuid);
                     }
                 }
@@ -127,6 +131,25 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
                         updatedGameState = targetBlueprint.onComplete(targetBlueprint, updatedGameState, gameData);
                     }
                 }
+            }
+        }
+    }
+
+    for(const resource of resources){
+        const resourceData = gameData.resourceSettings[resource.resourceType];
+
+        //Attempt to regrow
+        if(resourceData.regrowthTimeSeconds && resource.quantityRemaining < resourceData.initialQuantity){
+            const timeGrowthStarted = Math.max(resource.timeLastHarvested ?? 0, resource.timeLastRegrowth ?? 0);
+            const timeSinceLastGrowthSeconds = (Date.now() - timeGrowthStarted) / 1000;
+
+            const numberOfGrowthCycles = Math.floor(timeSinceLastGrowthSeconds / resourceData.regrowthTimeSeconds);
+            const timeOfLastGrowth = timeGrowthStarted + ((numberOfGrowthCycles * resourceData.regrowthTimeSeconds) * 1000);
+
+            resource.timeLastRegrowth = timeOfLastGrowth;
+            resource.quantityRemaining += numberOfGrowthCycles;
+            if(resource.quantityRemaining > resourceData.initialQuantity){
+                resource.quantityRemaining = resourceData.initialQuantity;
             }
         }
     }

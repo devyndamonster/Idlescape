@@ -14,6 +14,8 @@ interface ResourceSetting {
     drops: ResourceDrop[];
     initialGenerationMin?: number;
     initialGenerationMax?: number;
+    destroyOnDepleted: boolean;
+    regrowthTimeSeconds: number | null;
 }
 
 interface ResourceDrop {
@@ -32,6 +34,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         drops: [
             { itemType: ItemType.Stick, dropChance: 1, dropAmount: 1 },
         ],
+        destroyOnDepleted: true,
+        regrowthTimeSeconds: null,
     },
     [ResourceType.Stone]: {
         resourceType: ResourceType.Stone,
@@ -44,6 +48,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         ],
         initialGenerationMin: 10,
         initialGenerationMax: 20,
+        destroyOnDepleted: true,
+        regrowthTimeSeconds: null,
     },
     [ResourceType.Tree]: {
         resourceType: ResourceType.Tree,
@@ -61,6 +67,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         ],
         initialGenerationMin: 3,
         initialGenerationMax: 8,
+        destroyOnDepleted: true,
+        regrowthTimeSeconds: null,
     },
     [ResourceType.Grass]: {
         resourceType: ResourceType.Grass,
@@ -75,6 +83,8 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         ],
         initialGenerationMin: 10,
         initialGenerationMax: 20,
+        destroyOnDepleted: true,
+        regrowthTimeSeconds: 60,
     },
     [ResourceType.FallenTree]: {
         resourceType: ResourceType.FallenTree,
@@ -89,6 +99,22 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         ],
         initialGenerationMin: 1,
         initialGenerationMax: 3,
+        destroyOnDepleted: true,
+        regrowthTimeSeconds: null,
+    },
+    [ResourceType.BlueberryBush]: {
+        resourceType: ResourceType.BlueberryBush,
+        initialQuantity: 25,
+        harvestTime: 5,
+        size: 60,
+        icon: '/Idlescape/BlueberryBush.svg',
+        drops: [
+            { itemType: ItemType.Blueberry, dropChance: 1, dropAmount: 1 },
+        ],
+        initialGenerationMin: 3,
+        initialGenerationMax: 6,
+        destroyOnDepleted: false,
+        regrowthTimeSeconds: 30,
     },
 }
 

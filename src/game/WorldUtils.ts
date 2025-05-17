@@ -6,7 +6,7 @@ import { WorldEntity } from "@/models/entities/WorldEntity";
 import { Vector2 } from "three";
 
 export function getNearestResource(startLocation: Vector2, resourceType: ResourceType, gameState: GameState): Resource | null {
-    const resources = getResources(gameState).filter(resource => resource.resourceType === resourceType);
+    const resources = getResources(gameState).filter(resource => resource.resourceType === resourceType && resource.quantityRemaining > 0);
     return getNearestEntity(startLocation, resources);
 }
 

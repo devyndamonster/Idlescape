@@ -6,4 +6,5 @@ export enum ItemType {
     GrassSeed,
     FreshGrass,
     Stone,
+    Blueberry,
 }
