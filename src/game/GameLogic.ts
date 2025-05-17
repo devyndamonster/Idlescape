@@ -27,7 +27,7 @@ function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: G
     }
 }
 
-export function getUpdatedGameState(gameState: GameState, gameData: GameData, queuedUpdates: GameUpdate[]): GameState {
+export function getUpdatedGameState(gameState: GameState, gameData: GameData, currentTime: number, queuedUpdates: GameUpdate[]): GameState {
     
     let updatedGameState: GameState = {
         ...gameState
@@ -37,9 +37,9 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
         applyGameUpdate(updatedGameState, gameData, gameUpdate);
     }
     
-    const deltaTimeSeconds = getDeltaTimeSeconds(updatedGameState.timestamp);
+    const deltaTimeSeconds = getDeltaTimeSeconds(updatedGameState.timestamp, currentTime);
 
-    updatedGameState.timestamp = Date.now();
+    updatedGameState.timestamp = currentTime;
     updatedGameState.currentTick += 1;
 
     const blueprints = getBlueprints(updatedGameState);
@@ -102,7 +102,7 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
 
                     const resourceData = gameData.resourceSettings[targetResource.resourceType];
                     targetResource.quantityRemaining -= 1;
-                    targetResource.timeLastHarvested = Date.now();
+                    targetResource.timeLastHarvested = currentTime;
                     if(targetResource.quantityRemaining <= 0 && resourceData.destroyOnDepleted){
                         updatedGameState.entities = updatedGameState.entities.filter(r => r.uuid !== targetResource.uuid);
                     }
@@ -110,7 +110,7 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
             }
         }
         else if(action.actionType == ActionType.Move){
-            actor.location.add(action.direction.clone().multiplyScalar(actor.moveSpeed));
+            actor.location.add(action.direction.clone().multiplyScalar(actor.moveSpeed * deltaTimeSeconds));
         }
         else if(action.actionType == ActionType.InsertItem){
             const targetBlueprint = blueprints.find(b => b.uuid === action.targetUuid);
@@ -152,7 +152,7 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, qu
         //Attempt to regrow
         if(resourceData.regrowthTimeSeconds && resource.quantityRemaining < resourceData.initialQuantity){
             const timeGrowthStarted = Math.max(resource.timeLastHarvested ?? 0, resource.timeLastRegrowth ?? 0);
-            const timeSinceLastGrowthSeconds = (Date.now() - timeGrowthStarted) / 1000;
+            const timeSinceLastGrowthSeconds = (currentTime - timeGrowthStarted) / 1000;
 
             const numberOfGrowthCycles = Math.floor(timeSinceLastGrowthSeconds / resourceData.regrowthTimeSeconds);
             const timeOfLastGrowth = timeGrowthStarted + ((numberOfGrowthCycles * resourceData.regrowthTimeSeconds) * 1000);
@@ -261,6 +261,6 @@ function generateResource(resourceType: ResourceType, gameData: GameData, gameSt
 }
 
 
-function getDeltaTimeSeconds(previousTime: number){
-    return (Date.now() - previousTime) / 1000;
+function getDeltaTimeSeconds(previousTime: number, currentTime: number){
+    return (currentTime - previousTime) / 1000;
 }

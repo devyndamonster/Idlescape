@@ -10,6 +10,7 @@ import { Actor } from './models/entities/Actor';
 import { Button } from './components/ui/button';
 import { UserAction } from './models/UserAction';
 import { GameUpdateType, useGameData, useGameState, useGameUpdateQueue } from './game/GameContext';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './components/ui/alert-dialog';
 
 function App() {
   const gameState = useGameState();
@@ -50,6 +51,12 @@ function App() {
     })
   }
 
+  const timeSinceLastUpdate = ((Date.now() - gameState.timestamp) / 1000);
+  console.log("Time since last update: ", timeSinceLastUpdate)
+
+  const displayFastForwardAlert = timeSinceLastUpdate > 10
+  console.log("Display fast forward alert: ", displayFastForwardAlert)
+
   return (
     <SidebarProvider>
       <GameSideBar onResetWorld={onResetWorld} onUserActionStarted={setUserAction}/>
@@ -57,6 +64,19 @@ function App() {
         {gameState && gameData && (
           <>
             <ScrollableMap gameState={gameState} gameData={gameData} onClickMap={onClickMap} />
+            <AlertDialog open={displayFastForwardAlert}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Fast Forward!</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    It has been X seconds since the last update, prepare to fast forward time
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction onClick={() => queueUpdate({updateType: GameUpdateType.FastForward})}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <CharacterDialog gameState={gameState} selectedActorUuid={selectedActorUuid} onClose={() => setSelectedActorUuid(null)} onActorUpdated={onActorUpdated}/>
           </>
         )}

@@ -15,7 +15,7 @@ export function getNewActor(location: Vector2): Actor {
     return {
         entityType: EntityType.Actor,
         location: location,
-        moveSpeed: 2,
+        moveSpeed: 20,
         size: 80,
         icon: "/Idlescape/StickCharacter.svg",
         harvestProgress: 0,

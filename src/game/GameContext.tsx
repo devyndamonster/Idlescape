@@ -20,8 +20,11 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
   const gameUpdates = useRef<GameUpdate[]>([]);
   const frameRate = useRef<number>(16);
   const nextFrameTime = useRef<number>(0);
+  const isFastForwarding = useRef(false);
 
   const queueGameUpdate = (gameUpdate: GameUpdate) => {
+    console.log("Game update queued:", gameUpdate);
+
     if(gameUpdate.updateType == GameUpdateType.ResetWorld && gameDataRef.current){
       gameUpdates.current = [];
 
@@ -30,6 +33,9 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
       gameStateRef.current = initialGameState;
       setGameState(initialGameState);
       saveGameState(initialGameState);
+    }
+    else if(gameUpdate.updateType == GameUpdateType.FastForward){
+      isFastForwarding.current = true;
     }
     else{
       gameUpdates.current.push(gameUpdate);
@@ -41,7 +47,22 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
     if (!gameData) throw new Error("Game data is not loaded yet.");
 
     const currentGameState = gameStateRef.current ?? getGameState();
-    const updatedGameState = getUpdatedGameState(currentGameState, gameData, gameUpdates.current);
+    let updatedGameState = currentGameState;
+
+    const timeSinceLastUpdate = (Date.now() - currentGameState.timestamp) / 1000;
+    if(timeSinceLastUpdate > 10 && !isFastForwarding.current){
+      console.log("Fast forward!");
+    }
+    else{
+      const fastForwardedTime = currentGameState.timestamp + 5000
+      const timeOfUpdate = Math.min(fastForwardedTime, Date.now());
+
+      if(isFastForwarding.current && fastForwardedTime > Date.now()){
+        isFastForwarding.current = false;
+      }
+
+      updatedGameState = getUpdatedGameState(currentGameState, gameData, timeOfUpdate, gameUpdates.current);
+    }
 
     gameUpdates.current = [];
     gameStateRef.current = updatedGameState;
@@ -133,7 +154,8 @@ export function useGameUpdateQueue() {
 export type GameUpdate = 
   ResetWorldAction | 
   BuildAction | 
-  UpdateActorAction;
+  UpdateActorAction |
+  FastForwardAction;
 
 export type ResetWorldAction = {
   updateType: GameUpdateType.ResetWorld;
@@ -151,8 +173,13 @@ export type UpdateActorAction = {
   updatedActor: Actor;
 }
 
+export type FastForwardAction = {
+  updateType: GameUpdateType.FastForward;
+}
+
 export enum GameUpdateType {
   ResetWorld = 1,
   BuildAction = 2,
   UpdateActor = 3,
+  FastForward = 4,
 }
