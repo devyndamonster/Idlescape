@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
 import { GameSideBar } from './components/game/gameSideBar';
 import ScrollableMap from './components/game/scrollableMap';
@@ -9,12 +9,13 @@ import { UserActionType } from './enums/UserAction';
 import { Actor } from './models/entities/Actor';
 import { Button } from './components/ui/button';
 import { UserAction } from './models/UserAction';
-import { GameUpdateType, useGameData, useGameState, useGameUpdateQueue } from './game/GameContext';
+import { GameUpdateType, useAppState, useGameData, useGameState, useGameUpdateQueue } from './game/GameContext';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './components/ui/alert-dialog';
 
 function App() {
   const gameState = useGameState();
   const gameData = useGameData();
+  const appState = useAppState();
   const queueUpdate = useGameUpdateQueue();
   const [userAction, setUserAction] = useState<UserAction | null>(null);
   const [selectedActorUuid, setSelectedActorUuid] = useState<string | null>(null);
@@ -52,10 +53,21 @@ function App() {
   }
 
   const timeSinceLastUpdate = ((Date.now() - gameState.timestamp) / 1000);
-  console.log("Time since last update: ", timeSinceLastUpdate)
+  const displayFastForwardAlert = timeSinceLastUpdate > appState.requiredSecondsToFastForward && !appState.isFastForwarding
 
-  const displayFastForwardAlert = timeSinceLastUpdate > 10
-  console.log("Display fast forward alert: ", displayFastForwardAlert)
+
+  //Format: April 1, 2023 12:00:00 AM
+  const dateFormatRef = useMemo(() => new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }), []);
+
+  const formattedDate = dateFormatRef.format(new Date(gameState.timestamp));
 
   return (
     <SidebarProvider>
@@ -83,6 +95,13 @@ function App() {
         <div style={{ position: 'absolute', top: 0, left: 0 }}>
           <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', padding: '10px' }}>
             <SidebarTrigger size="default" variant={"outline"} className='h-7'/>
+            {!appState.isPaused ? 
+              (
+                <Button size="default" variant={"outline"} className="h-7" onClick={() => queueUpdate({updateType: GameUpdateType.Pause})}>Pause - {formattedDate}</Button>
+              ) : (
+                <Button size="default" variant={"outline"} className="h-7" onClick={() => queueUpdate({updateType: GameUpdateType.FastForward})}>Play - {formattedDate}</Button>
+              )
+            }
             {userAction != null &&
               <Button size="default" variant={"outline"} className="h-7" onClick={() => setUserAction(null)}>Cancel Building</Button>
             }

@@ -57,13 +57,12 @@ function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState:
         return {
             actionType: ActionType.Collect,
             targetResource: nearestResource
-        }
+        };
     }
     else{
-        const direction = nearestResource.location.clone().sub(actor.location).normalize();
         return {
             actionType: ActionType.Move,
-            direction: direction,
+            destination: nearestResource.location,
         };
     }
 }

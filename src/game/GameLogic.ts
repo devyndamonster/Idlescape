@@ -9,6 +9,7 @@ import { getRemainingRequiredItems } from "./BlueprintLogic";
 import { GameUpdate, GameUpdateType } from "./GameContext";
 import { EntityType } from "@/enums/EntityType";
 import { ItemType } from "@/enums/ItemType";
+import { AppState } from "@/models/AppState";
 
 function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: GameUpdate){
     if(gameUpdate.updateType == GameUpdateType.BuildAction){
@@ -110,7 +111,18 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
             }
         }
         else if(action.actionType == ActionType.Move){
-            actor.location.add(action.direction.clone().multiplyScalar(actor.moveSpeed * deltaTimeSeconds));
+            if(action.direction != undefined)
+            {
+                actor.location.add(action.direction.clone().multiplyScalar(actor.moveSpeed * deltaTimeSeconds));
+            }
+            else{
+                const direction = action.destination.clone().sub(actor.location).normalize();
+                const distance = actor.location.distanceTo(action.destination);
+                const maxMoveDistance = actor.moveSpeed * deltaTimeSeconds;
+                const movedDistance = Math.min(distance, maxMoveDistance);
+
+                actor.location.add(direction.clone().multiplyScalar(movedDistance));
+            }
         }
         else if(action.actionType == ActionType.InsertItem){
             const targetBlueprint = blueprints.find(b => b.uuid === action.targetUuid);
@@ -226,6 +238,10 @@ export function loadSVGImage(url: string): Promise<HTMLImageElement> {
         img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
         img.src = url;
     });
+}
+
+export function getIsFastForwarding(gameState: GameState | undefined, appState: AppState): boolean {
+    return gameState != undefined && !appState.isPaused && (Date.now() - gameState.timestamp) / 1000 > appState.requiredSecondsToFastForward
 }
 
 function generateResource(resourceType: ResourceType, gameData: GameData, gameState: GameState){

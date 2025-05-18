@@ -15,8 +15,10 @@ export type IdleAction = {
 
 export type MoveAction = {
     actionType: ActionType.Move;
-    direction: Vector2;
-}
+} & (
+    { direction: Vector2; destination?: never } |
+    { direction?: never; destination: Vector2 }
+);
 
 export type CollectAction = {
     actionType: ActionType.Collect;

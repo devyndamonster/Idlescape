@@ -7,10 +7,12 @@ import { generateInitialGameState, getUpdatedGameState, loadSVGImage } from './G
 import { BuildableType } from '@/enums/BuildableType';
 import { Vector2 } from 'three';
 import { Actor } from '@/models/entities/Actor';
+import { AppState, initialAppState } from '@/models/AppState';
 
 export const GameStateContext = createContext<GameState | undefined>(undefined);
 export const GameDataContext = createContext<GameData | undefined>(undefined);
 export const GameUpdateQueueContext = createContext<((gameUpdate: GameUpdate) => void) | undefined>(undefined);
+export const AppStateContext = createContext<AppState>(initialAppState);
 
 export function GameContextProvider({ children }: { children: React.ReactNode }) {
   const [gameState, setGameState] = useState<GameState | undefined>(undefined);
@@ -18,24 +20,42 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
   const [gameData, setGameData] = useState<GameData | undefined>(undefined);
   const gameDataRef = useRef<GameData | undefined>(undefined);
   const gameUpdates = useRef<GameUpdate[]>([]);
+  const [appState, setAppState] = useState<AppState>(initialAppState);
+  const appStateRef = useRef<AppState>(initialAppState);
   const frameRate = useRef<number>(16);
   const nextFrameTime = useRef<number>(0);
-  const isFastForwarding = useRef(false);
+
+
+  const updateGameState = (newGameState: GameState) => {
+    gameStateRef.current = newGameState;
+    setGameState(newGameState);
+    saveGameState(newGameState);
+  }
+
+  const updateAppState = (newAppState: AppState) => {
+    appStateRef.current = newAppState;
+    setAppState(newAppState);
+  }
 
   const queueGameUpdate = (gameUpdate: GameUpdate) => {
-    console.log("Game update queued:", gameUpdate);
-
     if(gameUpdate.updateType == GameUpdateType.ResetWorld && gameDataRef.current){
       gameUpdates.current = [];
 
       const initialGameState = generateInitialGameState(gameDataRef.current);
-
-      gameStateRef.current = initialGameState;
-      setGameState(initialGameState);
-      saveGameState(initialGameState);
+      updateGameState(initialGameState);
     }
     else if(gameUpdate.updateType == GameUpdateType.FastForward){
-      isFastForwarding.current = true;
+      updateAppState({
+        ...appStateRef.current,
+        isFastForwarding: true,
+        isPaused: false,
+      });
+    }
+    else if(gameUpdate.updateType == GameUpdateType.Pause){
+      updateAppState({
+        ...appStateRef.current,
+        isPaused: true,
+      });
     }
     else{
       gameUpdates.current.push(gameUpdate);
@@ -49,26 +69,46 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
     const currentGameState = gameStateRef.current ?? getGameState();
     let updatedGameState = currentGameState;
 
-    const timeSinceLastUpdate = (Date.now() - currentGameState.timestamp) / 1000;
-    if(timeSinceLastUpdate > 10 && !isFastForwarding.current){
-      console.log("Fast forward!");
+    if(shouldPauseForFastForward(currentGameState, appStateRef.current))
+    {
+      updateAppState({
+        ...appStateRef.current,
+        isPaused: true,
+      });
     }
-    else{
-      const fastForwardedTime = currentGameState.timestamp + 5000
-      const timeOfUpdate = Math.min(fastForwardedTime, Date.now());
 
-      if(isFastForwarding.current && fastForwardedTime > Date.now()){
-        isFastForwarding.current = false;
-      }
+    const timeOfUpdate = getNextUpdateTime(currentGameState, appStateRef.current);
+    updatedGameState = getUpdatedGameState(currentGameState, gameData, timeOfUpdate, gameUpdates.current);
 
-      updatedGameState = getUpdatedGameState(currentGameState, gameData, timeOfUpdate, gameUpdates.current);
+    if(appStateRef.current.isFastForwarding && timeOfUpdate >= Date.now())
+    {
+      updateAppState({
+        ...appStateRef.current,
+        isFastForwarding: false,
+      });
     }
 
     gameUpdates.current = [];
-    gameStateRef.current = updatedGameState;
-    saveGameState(updatedGameState);
-    setGameState(updatedGameState);
+    updateGameState(updatedGameState);
   };
+
+  const shouldPauseForFastForward = (gameState: GameState, appState: AppState) => {
+    const secondsSinceLastUpdate = (Date.now() - gameState.timestamp) / 1000;
+    return secondsSinceLastUpdate > appState.requiredSecondsToFastForward && !appState.isFastForwarding;
+  }
+
+  const getNextUpdateTime = (gameState: GameState, appState: AppState) => {
+    if(appState.isPaused) 
+    {
+      return gameState.timestamp;
+    }
+
+    //Ensure that the fastest the time can jump forward is based on the fast forward time
+    const fastForwardedTime = gameState.timestamp + (appState.fastForwardSecondsIncrement * 1000);
+    const timeOfUpdate = Math.min(fastForwardedTime, Date.now());
+
+    return timeOfUpdate;
+  }
 
   useEffect(() => {
     let frameId: number;
@@ -77,7 +117,8 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
       frameId = requestAnimationFrame(frame);
 
       if(gameDataRef.current && nextFrameTime.current < Date.now()){
-        const updatedNextFrameTime = Date.now() + (1000 / frameRate.current);
+        const targetFrameRate = appStateRef.current.isFastForwarding ? 1000 : frameRate.current;
+        const updatedNextFrameTime = Date.now() + (1000 / targetFrameRate);
         nextFrameTime.current = updatedNextFrameTime;
         runGameLoop();
       }
@@ -112,18 +153,20 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <GameDataContext.Provider value={gameData}>
-      <GameStateContext.Provider value={gameState}>
-        <GameUpdateQueueContext.Provider value={queueGameUpdate}>
-          <>
-            {(gameState && gameData) ? (
-              children
-            ) :
-            (<div>Loading...</div>)}
-          </>
-        </GameUpdateQueueContext.Provider>
-      </GameStateContext.Provider>
-    </GameDataContext.Provider>
+    <AppStateContext.Provider value={appState}>
+      <GameDataContext.Provider value={gameData}>
+        <GameStateContext.Provider value={gameState}>
+          <GameUpdateQueueContext.Provider value={queueGameUpdate}>
+            <>
+              {(gameState && gameData) ? (
+                children
+              ) :
+              (<div>Loading...</div>)}
+            </>
+          </GameUpdateQueueContext.Provider>
+        </GameStateContext.Provider>
+      </GameDataContext.Provider>
+    </AppStateContext.Provider>
   );
 }
 
@@ -151,11 +194,17 @@ export function useGameUpdateQueue() {
   return context;
 }
 
+export function useAppState() {
+  const context = useContext(AppStateContext);
+  return context;
+}
+
 export type GameUpdate = 
   ResetWorldAction | 
   BuildAction | 
   UpdateActorAction |
-  FastForwardAction;
+  FastForwardAction |
+  PauseAction;
 
 export type ResetWorldAction = {
   updateType: GameUpdateType.ResetWorld;
@@ -177,9 +226,14 @@ export type FastForwardAction = {
   updateType: GameUpdateType.FastForward;
 }
 
+export type PauseAction = {
+  updateType: GameUpdateType.Pause;
+}
+
 export enum GameUpdateType {
   ResetWorld = 1,
   BuildAction = 2,
   UpdateActor = 3,
   FastForward = 4,
+  Pause = 5,
 }
