@@ -3,11 +3,13 @@ import { Blueprint } from "./entities/Blueprint";
 import { GameEntity } from "./entities/GameEntity";
 import { Resource } from "./entities/Resource";
 import { Actor } from "./entities/Actor";
+import { MapTile } from "./MapTile";
 
 export interface GameState {
     currentTick: number;
     timestamp: number;
     entities: GameEntity[];
+    tileGrid: MapTile[][];
 }
 
 export function getBlueprints(gameState: GameState): Blueprint[] {

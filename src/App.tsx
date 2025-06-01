@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar';
 import { GameSideBar } from './components/game/gameSideBar';
 import ScrollableMap from './components/game/scrollableMap';

@@ -10,6 +10,8 @@ import { GameUpdate, GameUpdateType } from "./GameContext";
 import { EntityType } from "@/enums/EntityType";
 import { ItemType } from "@/enums/ItemType";
 import { AppState } from "@/models/AppState";
+import { MapTile } from "@/models/MapTile";
+import { generateMapTiles } from "./WorldGenerationLogic";
 
 function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: GameUpdate){
     if(gameUpdate.updateType == GameUpdateType.BuildAction){
@@ -196,10 +198,14 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
 }
 
 export function generateInitialGameState(gameData: GameData): GameState {
+
+    const mapTiles: MapTile[][] = generateMapTiles(100, 100, 10)
+
     let initialGameState: GameState = {
         currentTick: 0,
         timestamp: Date.now(),
         entities: [],
+        tileGrid: mapTiles,
     }
 
     const resourceTypes = Object.values(ResourceType).filter(
