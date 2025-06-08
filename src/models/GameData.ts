@@ -4,6 +4,7 @@ import { ResourceType } from "@/enums/ResourceType";
 import { BlueprintData } from "./entities/Blueprint";
 import { GameState } from "./GameState";
 import { EntityType } from "@/enums/EntityType";
+import { TerrainType } from "./MapTile";
 
 interface ResourceSetting {
     resourceType: ResourceType;
@@ -16,6 +17,7 @@ interface ResourceSetting {
     initialGenerationMax?: number;
     destroyOnDepleted: boolean;
     regrowthTimeSeconds: number | null;
+    growthTileTypes: TerrainType[];
 }
 
 interface ResourceDrop {
@@ -36,6 +38,9 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         ],
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
+        growthTileTypes: [TerrainType.Soil, TerrainType.Sand],
+        initialGenerationMin: 10,
+        initialGenerationMax: 20,
     },
     [ResourceType.Stone]: {
         resourceType: ResourceType.Stone,
@@ -46,10 +51,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         drops: [
             { itemType: ItemType.Stone, dropChance: 1, dropAmount: 1 },
         ],
-        initialGenerationMin: 10,
-        initialGenerationMax: 20,
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
+        growthTileTypes: [TerrainType.Rock, TerrainType.Soil],
+        initialGenerationMin: 15,
+        initialGenerationMax: 25,
     },
     [ResourceType.Tree]: {
         resourceType: ResourceType.Tree,
@@ -65,10 +71,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
             { itemType: ItemType.TreeSeed, dropChance: 1, dropAmount: 1 },
             { itemType: ItemType.TreeSeed, dropChance: 0.5, dropAmount: 1 },
         ],
-        initialGenerationMin: 3,
-        initialGenerationMax: 8,
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
+        growthTileTypes: [TerrainType.Soil],
+        initialGenerationMin: 10,
+        initialGenerationMax: 15,
     },
     [ResourceType.Grass]: {
         resourceType: ResourceType.Grass,
@@ -81,10 +88,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
             { itemType: ItemType.GrassSeed, dropChance: 0.5, dropAmount: 1 },
             { itemType: ItemType.FreshGrass, dropChance: 1, dropAmount: 1 },
         ],
-        initialGenerationMin: 10,
-        initialGenerationMax: 20,
         destroyOnDepleted: true,
         regrowthTimeSeconds: 60,
+        growthTileTypes: [TerrainType.Soil],
+        initialGenerationMin: 25,
+        initialGenerationMax: 35,
     },
     [ResourceType.FallenTree]: {
         resourceType: ResourceType.FallenTree,
@@ -97,10 +105,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
             { itemType: ItemType.Log, dropChance: 0.5, dropAmount: 2 },
             { itemType: ItemType.Log, dropChance: 0.5, dropAmount: 1 },
         ],
-        initialGenerationMin: 1,
-        initialGenerationMax: 3,
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
+        growthTileTypes: [TerrainType.Soil, TerrainType.Sand],
+        initialGenerationMin: 5,
+        initialGenerationMax: 10,
     },
     [ResourceType.BlueberryBush]: {
         resourceType: ResourceType.BlueberryBush,
@@ -111,10 +120,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         drops: [
             { itemType: ItemType.Blueberry, dropChance: 1, dropAmount: 1 },
         ],
-        initialGenerationMin: 3,
-        initialGenerationMax: 6,
         destroyOnDepleted: false,
         regrowthTimeSeconds: 30,
+        growthTileTypes: [TerrainType.Soil],
+        initialGenerationMin: 6,
+        initialGenerationMax: 12,
     },
 }
 

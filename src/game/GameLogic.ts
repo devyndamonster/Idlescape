@@ -179,21 +179,6 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
         }
     }
 
-    const chanceOfResourceSpawn = 0.01;
-    if(Math.random() < chanceOfResourceSpawn){
-        const resourceData = gameData.resourceSettings[ResourceType.Stick];
-        updatedGameState.entities.push({
-            entityType: EntityType.Resource,
-            uuid: crypto.randomUUID(),
-            location: new Vector2(Math.random() * 1000, Math.random() * 1000),
-            icon: resourceData.icon,
-            quantityRemaining: resourceData.initialQuantity,
-            size: resourceData.size,
-            harvestTime: resourceData.harvestTime,
-            resourceType: resourceData.resourceType,
-        });
-    }
-
     return updatedGameState;
 }
 
@@ -256,11 +241,31 @@ function generateResource(resourceType: ResourceType, gameData: GameData, gameSt
         return;
     }
 
+    const tileSize = gameData.worldHeight / gameState.tileGrid.length;
+
+    const generationTiles: {x: number, y: number, tile: MapTile}[] = [];
+    for(let row = 0; row < gameState.tileGrid.length; row++){
+        for(let col = 0; col < gameState.tileGrid[row].length; col++){
+            const tile = gameState.tileGrid[row][col];
+            if(resourceData.growthTileTypes.includes(tile.terrainType)){
+                generationTiles.push({x: col, y: row, tile: tile});
+            }
+        }
+    }
+
     const targetGenerationCount = MathUtils.randFloat(resourceData.initialGenerationMin, resourceData.initialGenerationMax);
     for(let i = 0; i < targetGenerationCount; i++){
         for(let attempt = 0; attempt < 100; attempt++){
-            const locationX = MathUtils.randFloat(0, gameData.worldWidth);
-            const locationY = MathUtils.randFloat(0, gameData.worldHeight);
+
+            const randomIndex = MathUtils.randInt(0, generationTiles.length - 1);
+            const generationTile = generationTiles[randomIndex];
+            const startX = generationTile.x * tileSize;
+            const startY = generationTile.y * tileSize;
+            const endX = startX + tileSize;
+            const endY = startY + tileSize;
+
+            const locationX = MathUtils.randFloat(startX, endX);
+            const locationY = MathUtils.randFloat(startY, endY);
             const location = new Vector2(locationX, locationY);
 
             const isLocationValid = getResources(gameState).every(resource => resource.location.distanceTo(location) > resource.size);
