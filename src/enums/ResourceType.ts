@@ -5,4 +5,6 @@ export enum ResourceType {
     Grass = 3,
     FallenTree = 4,
     BlueberryBush = 5,
+    WaterSpring = 6,
+    Clay = 7,
 }

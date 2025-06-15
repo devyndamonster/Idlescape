@@ -3,7 +3,7 @@ import { ResourceType } from "@/enums/ResourceType";
 import { GameData } from "@/models/GameData";
 import { GameState, getActors, getBlueprints, getResources } from "@/models/GameState";
 import { MathUtils, Vector2 } from "three";
-import { getActorAction, getNewActor, tryAddItemToInventory, tryGrabItemQuantityFromInventory } from "./ActorLogic";
+import { getActorAction, getNewActor, tryGrabItemQuantityFromInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
 import { getRemainingRequiredItems } from "./BlueprintLogic";
 import { GameUpdate, GameUpdateType } from "./GameContext";
@@ -12,6 +12,7 @@ import { ItemType } from "@/enums/ItemType";
 import { AppState } from "@/models/AppState";
 import { MapTile } from "@/models/MapTile";
 import { generateMapTiles } from "./WorldGenerationLogic";
+import {  ActorInteractionType } from "@/enums/ActorInteractionType";
 
 function applyGameUpdate(gameState: GameState, gameData: GameData, gameUpdate: GameUpdate){
     if(gameUpdate.updateType == GameUpdateType.BuildAction){
@@ -59,11 +60,10 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
         actor.hunger -= gameData.hungerDecreasePerSecond * deltaTimeSeconds;
         actor.thirst -= gameData.thirstDecreasePerSecond * deltaTimeSeconds;
 
-        if(actor.hunger <= 0 || actor.thirst <= 0){
+        if(actor.hunger <= 0){
             const quantityFood = tryGrabItemQuantityFromInventory(actor, ItemType.Blueberry, 1);
             if(quantityFood > 0){
                 actor.hunger += 0.5;
-                actor.thirst += 0.5;
             }
         }
 
@@ -97,18 +97,15 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
                 if(actor.harvestProgress >= 1)
                 {
                     actor.harvestProgress = 0;
-                    
-                    const harvestedItems = getDroppedItemsFromResource(targetResource.resourceType, gameData);
-                    for (const item of harvestedItems) {
-                        tryAddItemToInventory(actor, item);
-                    }
 
                     const resourceData = gameData.resourceSettings[targetResource.resourceType];
-                    targetResource.quantityRemaining -= 1;
-                    targetResource.timeLastHarvested = currentTime;
-                    if(targetResource.quantityRemaining <= 0 && resourceData.destroyOnDepleted){
-                        updatedGameState.entities = updatedGameState.entities.filter(r => r.uuid !== targetResource.uuid);
-                    }
+
+                    resourceData.onInteract({
+                        actor: actor,
+                        targetEntity: targetResource,
+                        type: ActorInteractionType.Harvest,
+                        tool: "none"
+                    }, updatedGameState, gameData, currentTime);
                 }
             }
         }

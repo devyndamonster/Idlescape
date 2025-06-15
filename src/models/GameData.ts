@@ -5,6 +5,15 @@ import { BlueprintData } from "./entities/Blueprint";
 import { GameState } from "./GameState";
 import { EntityType } from "@/enums/EntityType";
 import { TerrainType } from "./MapTile";
+import { Resource } from "./entities/Resource";
+import { Actor } from "./entities/Actor";
+import { ActorInteaction, ActorInteractionType } from "@/enums/ActorInteractionType";
+import { getDroppedItemsFromResource } from "@/game/GameLogic";
+import { tryAddItemToInventory } from "@/game/ActorLogic";
+
+export type Modify<T, R extends Partial<Record<keyof T, any>>> = Omit<T, keyof R> & R;
+
+export type ResourceInteraction = Modify<ActorInteaction, {targetEntity: Resource}>;
 
 interface ResourceSetting {
     resourceType: ResourceType;
@@ -13,6 +22,7 @@ interface ResourceSetting {
     size: number;
     icon: string;
     drops: ResourceDrop[];
+    onInteract: (actorInteraction: ResourceInteraction, gameState: GameState, gameData: GameData, currentTime: number) => void;
     initialGenerationMin?: number;
     initialGenerationMax?: number;
     destroyOnDepleted: boolean;
@@ -26,6 +36,32 @@ interface ResourceDrop {
     dropAmount: number;
 }
 
+const harvestResource = (targetResource: Resource, actor: Actor, gameState: GameState, gameData: GameData, currentTime: number) => {
+    const resourceData = gameData.resourceSettings[targetResource.resourceType];
+    const harvestedItems = getDroppedItemsFromResource(targetResource.resourceType, gameData);
+    for (const item of harvestedItems) {
+        tryAddItemToInventory(actor, item);
+    }
+
+    targetResource.quantityRemaining -= 1;
+    targetResource.timeLastHarvested = currentTime;
+    if(targetResource.quantityRemaining <= 0 && resourceData.destroyOnDepleted){
+        gameState.entities = gameState.entities.filter(r => r.uuid !== targetResource.uuid);
+    }
+}
+
+const drinkResource = (targetResource: Resource, actor: Actor, gameState: GameState, gameData: GameData, currentTime: number) => {
+    const resourceData = gameData.resourceSettings[targetResource.resourceType];
+
+    actor.thirst = 1;
+
+    targetResource.quantityRemaining -= 1;
+    targetResource.timeLastHarvested = currentTime;
+    if(targetResource.quantityRemaining <= 0 && resourceData.destroyOnDepleted){
+        gameState.entities = gameState.entities.filter(r => r.uuid !== targetResource.uuid);
+    }
+}
+
 const resourceSettings: Record<ResourceType, ResourceSetting> = {
     [ResourceType.Stick]: {
         resourceType: ResourceType.Stick,
@@ -36,6 +72,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         drops: [
             { itemType: ItemType.Stick, dropChance: 1, dropAmount: 1 },
         ],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                harvestResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
         growthTileTypes: [TerrainType.Soil, TerrainType.Sand],
@@ -51,6 +92,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         drops: [
             { itemType: ItemType.Stone, dropChance: 1, dropAmount: 1 },
         ],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                harvestResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
         growthTileTypes: [TerrainType.Rock, TerrainType.Soil],
@@ -71,6 +117,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
             { itemType: ItemType.TreeSeed, dropChance: 1, dropAmount: 1 },
             { itemType: ItemType.TreeSeed, dropChance: 0.5, dropAmount: 1 },
         ],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                harvestResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
         growthTileTypes: [TerrainType.Soil],
@@ -88,6 +139,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
             { itemType: ItemType.GrassSeed, dropChance: 0.5, dropAmount: 1 },
             { itemType: ItemType.FreshGrass, dropChance: 1, dropAmount: 1 },
         ],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                harvestResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
         destroyOnDepleted: true,
         regrowthTimeSeconds: 60,
         growthTileTypes: [TerrainType.Soil],
@@ -105,6 +161,11 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
             { itemType: ItemType.Log, dropChance: 0.5, dropAmount: 2 },
             { itemType: ItemType.Log, dropChance: 0.5, dropAmount: 1 },
         ],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                harvestResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
         destroyOnDepleted: true,
         regrowthTimeSeconds: null,
         growthTileTypes: [TerrainType.Soil, TerrainType.Sand],
@@ -120,11 +181,54 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         drops: [
             { itemType: ItemType.Blueberry, dropChance: 1, dropAmount: 1 },
         ],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                harvestResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
         destroyOnDepleted: false,
         regrowthTimeSeconds: 30,
         growthTileTypes: [TerrainType.Soil],
         initialGenerationMin: 6,
         initialGenerationMax: 12,
+    },
+    [ResourceType.WaterSpring]: {
+        resourceType: ResourceType.WaterSpring,
+        initialQuantity: 100,
+        harvestTime: 1,
+        size: 60,
+        icon: '/Idlescape/WaterSpring.svg',
+        drops: [],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                drinkResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
+        destroyOnDepleted: false,
+        regrowthTimeSeconds: 1,
+        growthTileTypes: [TerrainType.Rock],
+        initialGenerationMin: 1,
+        initialGenerationMax: 1,
+    },
+    [ResourceType.Clay]: {
+        resourceType: ResourceType.Clay,
+        initialQuantity: 20,
+        harvestTime: 10,
+        size: 60,
+        icon: '/Idlescape/Clay.svg',
+        drops: [
+            { itemType: ItemType.Clay, dropChance: 1, dropAmount: 1 },
+        ],
+        onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
+            if(actorInteraction.type == ActorInteractionType.Harvest){
+                harvestResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+            }
+        },
+        destroyOnDepleted: true,
+        regrowthTimeSeconds: null,
+        growthTileTypes: [TerrainType.Sand],
+        initialGenerationMin: 5,
+        initialGenerationMax: 10,
     },
 }
 
