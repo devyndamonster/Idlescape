@@ -3,18 +3,32 @@ import { Objective } from "./Objective";
 
 export interface ActorStrategy
 {
-    /** Any of the conditions can be true to trigger the strategy */
+    /** All of the conditions must be true for strategy to apply */
     conditions: StrategyCondition[];
     objective: Objective;
 }
 
-/** All provided conditions must be true to trigger the condition */
-export interface StrategyCondition
+export type StrategyCondition = HunderCondition | ThirstCondition | ItemQuantityCondition;
+
+export interface HunderCondition{
+    conditionType: StrategyConditionType.HungerLessThan;
+    hungerLessThan: number;
+}
+
+export interface ThirstCondition{
+    conditionType: StrategyConditionType.ThirstLessThan;
+    thirstLessThan: number;
+}
+
+export interface ItemQuantityCondition{
+    conditionType: StrategyConditionType.ItemQuantityLessThan;
+    itemType: ItemType;
+    quantity: number;
+}
+
+export enum StrategyConditionType
 {
-    hungerLessThan?: number;
-    thirstLessThan?: number;
-    itemQuantityLessThan?: {
-        itemType: ItemType;
-        quantity: number;
-    }
+    HungerLessThan = 1,
+    ThirstLessThan = 2,
+    ItemQuantityLessThan = 3
 }

@@ -10,7 +10,7 @@ import { Vector2 } from "three";
 import { getProvidableItems } from "./BlueprintLogic";
 import { EntityType } from "@/enums/EntityType";
 import { ItemType } from "@/enums/ItemType";
-import { StrategyCondition } from "@/models/ActorStrategy";
+import { StrategyCondition, StrategyConditionType } from "@/models/ActorStrategy";
 
 export function getNewActor(location: Vector2): Actor {
     return {
@@ -28,10 +28,9 @@ export function getNewActor(location: Vector2): Actor {
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
         strategies: [{
             conditions: [{
-                itemQuantityLessThan: {
-                    itemType: ItemType.Stick,
-                    quantity: 5
-                }
+                conditionType: StrategyConditionType.ItemQuantityLessThan,
+                itemType: ItemType.Stick,
+                quantity: 5,
             }],
             objective: {
                 objectiveType: ObjectiveType.CollectResource,
@@ -47,34 +46,33 @@ export function getActorAction(actor: Actor, gameState: GameState): ActorAction 
     }
 
     for(const strategy of actor.strategies) {
-        for (const condition of strategy.conditions) {
-            if(isStrategyConditionMet(actor, condition)) {
-                if(strategy.objective.objectiveType == ObjectiveType.CollectResource){
-                    action = tryCollectResource(actor, strategy.objective.resourceType, gameState) ?? action;
-                }
-                else if(strategy.objective.objectiveType == ObjectiveType.BuildStructure){
-                    action = tryBuildStructure(actor, gameState) ?? action;
-                }
-
-                return action
+        if(strategy.conditions.every(condition => isStrategyConditionMet(actor, condition))) {
+            if(strategy.objective.objectiveType == ObjectiveType.CollectResource){
+                action = tryCollectResource(actor, strategy.objective.resourceType, gameState) ?? action;
             }
-        } 
+            else if(strategy.objective.objectiveType == ObjectiveType.BuildStructure){
+                action = tryBuildStructure(actor, gameState) ?? action;
+            }
+
+            return action
+        }
     }
 
     return action;
 }
 
 function isStrategyConditionMet(actor: Actor, condition: StrategyCondition): boolean {
-    if(condition.hungerLessThan !== undefined && actor.hunger >= condition.hungerLessThan) {
-        return false;
+    if(condition.conditionType == StrategyConditionType.HungerLessThan){
+        return actor.hunger < condition.hungerLessThan;
     }
-    if(condition.thirstLessThan !== undefined && actor.thirst >= condition.thirstLessThan) {
-        return false;
+    if(condition.conditionType == StrategyConditionType.ThirstLessThan){
+        return actor.thirst < condition.thirstLessThan;
     }
-    if(condition.itemQuantityLessThan !== undefined && getQuantityAvailableInInventory(actor, condition.itemQuantityLessThan.itemType) >= condition.itemQuantityLessThan.quantity) {
-        return false;
+    if(condition.conditionType == StrategyConditionType.ItemQuantityLessThan){
+        return getQuantityAvailableInInventory(actor, condition.itemType) < condition.quantity;
     }
-    return true;
+
+    return false;
 }
 
 function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState: GameState): ActorAction | null {

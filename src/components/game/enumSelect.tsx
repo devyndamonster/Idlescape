@@ -1,4 +1,3 @@
-import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 type EnumType = Record<number, string>;
 
@@ -7,10 +6,11 @@ interface Props<T extends EnumType> {
     value: T[keyof T] & number;
     onChanged: (enumValue: T[keyof T] & number) => void;
     valueName: string;
+    className?: string;
 }
 
 
-export default function EnumSelect<T extends EnumType>({enumObject, value, onChanged, valueName}: Props<T>) {
+export default function EnumSelect<T extends EnumType>({enumObject, value, onChanged, valueName, className}: Props<T>) {
 
     const enumNumberKeys: (T[keyof T] & number)[] = Object.values(enumObject).filter(key => typeof key === "number");
 
@@ -33,11 +33,8 @@ export default function EnumSelect<T extends EnumType>({enumObject, value, onCha
     
     return (
         <>
-            <Label className="text-right">
-                {valueName}
-            </Label>
             <Select value={enumNumberToStringMapping[value]} onValueChange={onSelectedEnumChanged}>
-                <SelectTrigger className="col-span-3 w-full">
+                <SelectTrigger className={className}>
                     <SelectValue placeholder={`Select a ${valueName}`} />
                 </SelectTrigger>
                 <SelectContent>
