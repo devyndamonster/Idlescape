@@ -56,6 +56,10 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
     const actors = getActors(updatedGameState);
     const resources = getResources(updatedGameState);
     for(const actor of actors){
+        if(actor.health <= 0){
+            updatedGameState.entities = updatedGameState.entities.filter(entity => entity.uuid !== actor.uuid);
+            continue;
+        }
 
         actor.hunger -= gameData.hungerDecreasePerSecond * deltaTimeSeconds;
         actor.thirst -= gameData.thirstDecreasePerSecond * deltaTimeSeconds;
@@ -157,6 +161,11 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
         }
     }
 
+    if(!updatedGameState.entities.some(entity => entity.entityType == EntityType.Actor)){
+        updatedGameState.isGameOver = true;
+        return updatedGameState;
+    }
+
     for(const resource of resources){
         const resourceData = gameData.resourceSettings[resource.resourceType];
 
@@ -188,6 +197,7 @@ export function generateInitialGameState(gameData: GameData): GameState {
         timestamp: Date.now(),
         entities: [],
         tileGrid: mapTiles,
+        isGameOver: false,
     }
 
     const resourceTypes = Object.values(ResourceType).filter(

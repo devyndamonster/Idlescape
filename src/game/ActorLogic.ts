@@ -10,6 +10,7 @@ import { Vector2 } from "three";
 import { getProvidableItems } from "./BlueprintLogic";
 import { EntityType } from "@/enums/EntityType";
 import { ItemType } from "@/enums/ItemType";
+import { StrategyCondition } from "@/models/ActorStrategy";
 
 export function getNewActor(location: Vector2): Actor {
     return {
@@ -25,27 +26,55 @@ export function getNewActor(location: Vector2): Actor {
         maxHealth: 100,
         uuid: crypto.randomUUID(),
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
-        currentObjective: {
-            objectiveType: ObjectiveType.CollectResource,
-            resourceType: ResourceType.Stick,
-        }
+        strategies: [{
+            conditions: [{
+                itemQuantityLessThan: {
+                    itemType: ItemType.Stick,
+                    quantity: 5
+                }
+            }],
+            objective: {
+                objectiveType: ObjectiveType.CollectResource,
+                resourceType: ResourceType.Stick,
+            }
+        }]
     }
 }
 
 export function getActorAction(actor: Actor, gameState: GameState): ActorAction {
-    
     let action: ActorAction = {
         actionType: ActionType.Idle,
     }
 
-    if(actor.currentObjective.objectiveType == ObjectiveType.CollectResource){
-        action = tryCollectResource(actor, actor.currentObjective.resourceType, gameState) ?? action;
-    }
-    else if(actor.currentObjective.objectiveType == ObjectiveType.BuildStructure){
-        action = tryBuildStructure(actor, gameState) ?? action;
+    for(const strategy of actor.strategies) {
+        for (const condition of strategy.conditions) {
+            if(isStrategyConditionMet(actor, condition)) {
+                if(strategy.objective.objectiveType == ObjectiveType.CollectResource){
+                    action = tryCollectResource(actor, strategy.objective.resourceType, gameState) ?? action;
+                }
+                else if(strategy.objective.objectiveType == ObjectiveType.BuildStructure){
+                    action = tryBuildStructure(actor, gameState) ?? action;
+                }
+
+                return action
+            }
+        } 
     }
 
     return action;
+}
+
+function isStrategyConditionMet(actor: Actor, condition: StrategyCondition): boolean {
+    if(condition.hungerLessThan !== undefined && actor.hunger >= condition.hungerLessThan) {
+        return false;
+    }
+    if(condition.thirstLessThan !== undefined && actor.thirst >= condition.thirstLessThan) {
+        return false;
+    }
+    if(condition.itemQuantityLessThan !== undefined && getQuantityAvailableInInventory(actor, condition.itemQuantityLessThan.itemType) >= condition.itemQuantityLessThan.quantity) {
+        return false;
+    }
+    return true;
 }
 
 function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState: GameState): ActorAction | null {
@@ -110,6 +139,13 @@ export function tryAddItemToInventory(actor: Actor, item: InventoryItem): boolea
     return false;
 }
 
+/**
+ * Removes as much of the specified item type from the actors inventory as possible, up to the specified quantity.
+ * @param actor 
+ * @param itemType 
+ * @param quantity 
+ * @returns The quantity of items that were successfully removed from the inventory.
+ */
 export function tryGrabItemQuantityFromInventory(actor: Actor, itemType: ItemType, quantity: number): number {
     let remainingQuantityToRemove = quantity;
 
@@ -130,4 +166,13 @@ export function tryGrabItemQuantityFromInventory(actor: Actor, itemType: ItemTyp
     }
 
     return quantity - remainingQuantityToRemove;
+}
+
+export function getQuantityAvailableInInventory(actor: Actor, itemType: ItemType): number {
+    return actor.inventory.reduce((total, slot) => {
+        if(slot.item?.itemType === itemType) {
+            return total + slot.quantity;
+        }
+        return total;
+    }, 0);
 }

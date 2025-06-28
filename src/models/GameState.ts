@@ -10,6 +10,7 @@ export interface GameState {
     timestamp: number;
     entities: GameEntity[];
     tileGrid: MapTile[][];
+    isGameOver: boolean;
 }
 
 export function getBlueprints(gameState: GameState): Blueprint[] {

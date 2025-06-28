@@ -1,12 +1,12 @@
 import { EntityType } from "@/enums/EntityType";
 import { InventorySlot } from "../InventorySlot";
-import { Objective } from "../Objective";
 import { RenderableEntity } from "./RenderableEntity";
+import { ActorStrategy } from "../ActorStrategy";
 
 export interface Actor extends RenderableEntity {
     entityType: EntityType.Actor;
     inventory: InventorySlot[];
-    currentObjective: Objective;
+    strategies: ActorStrategy[];
     moveSpeed: number;
     harvestProgress: number;
     hunger: number;

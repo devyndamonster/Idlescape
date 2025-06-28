@@ -12,7 +12,8 @@ export function getGameState(): GameState {
         currentTick: 0,
         timestamp: Date.now(),
         entities: [],
-        tileGrid: []
+        tileGrid: [],
+        isGameOver: false
     };
 }
 

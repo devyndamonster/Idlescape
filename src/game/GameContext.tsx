@@ -69,23 +69,25 @@ export function GameContextProvider({ children }: { children: React.ReactNode })
     const currentGameState = gameStateRef.current ?? getGameState();
     let updatedGameState = currentGameState;
 
-    if(shouldPauseForFastForward(currentGameState, appStateRef.current))
-    {
-      updateAppState({
-        ...appStateRef.current,
-        isPaused: true,
-      });
-    }
+    if(!currentGameState.isGameOver){
+      if(shouldPauseForFastForward(currentGameState, appStateRef.current))
+      {
+        updateAppState({
+          ...appStateRef.current,
+          isPaused: true,
+        });
+      }
 
-    const timeOfUpdate = getNextUpdateTime(currentGameState, appStateRef.current);
-    updatedGameState = getUpdatedGameState(currentGameState, gameData, timeOfUpdate, gameUpdates.current);
+      const timeOfUpdate = getNextUpdateTime(currentGameState, appStateRef.current);
+      updatedGameState = getUpdatedGameState(currentGameState, gameData, timeOfUpdate, gameUpdates.current);
 
-    if(appStateRef.current.isFastForwarding && timeOfUpdate >= Date.now())
-    {
-      updateAppState({
-        ...appStateRef.current,
-        isFastForwarding: false,
-      });
+      if(appStateRef.current.isFastForwarding && timeOfUpdate >= Date.now())
+      {
+        updateAppState({
+          ...appStateRef.current,
+          isFastForwarding: false,
+        });
+      }
     }
 
     gameUpdates.current = [];

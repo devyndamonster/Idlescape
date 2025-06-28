@@ -6,10 +6,12 @@ import { Input } from "../ui/input";
 import { Progress } from "../ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Actor } from "@/models/entities/Actor";
-import { Objective } from "@/models/Objective";
-import ObjectiveSelect from "./objectiveSelect";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { ItemType } from "@/enums/ItemType";
+import { ActorStrategy } from "@/models/ActorStrategy";
+import StrategyInput from "./stategyInput";
+import { ObjectiveType } from "@/enums/ObjectiveType";
+import { ResourceType } from "@/enums/ResourceType";
 
 interface Props {
     gameState: GameState;
@@ -26,14 +28,14 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
         return null;
     }
 
-    const onObjectiveChange = (objective: Objective) => {
-        const updatedActor: Actor = {...selectedActor, currentObjective: objective};
+    const onStrategiesChanged = (strategies: ActorStrategy[]) => {
+        const updatedActor: Actor = {...selectedActor, strategies: strategies};
         onActorUpdated(updatedActor);
     }
 
     return (
         <Dialog open={selectedActor != undefined} onOpenChange={open => !open && onClose()}>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Actor</DialogTitle>
                     <DialogDescription>
@@ -79,9 +81,19 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-2">
-                        <AccordionTrigger>Objective</AccordionTrigger>
+                        <AccordionTrigger>Objectives</AccordionTrigger>
                         <AccordionContent>
-                            <ObjectiveSelect onObjectiveChanged={onObjectiveChange} currentObjective={selectedActor.currentObjective} />
+                            {selectedActor.strategies.map((strategy, index) => (
+                                <StrategyInput 
+                                    onStrategyChanged={updatedStrategy => onStrategiesChanged(selectedActor.strategies.map((strategy, i) => i === index ? updatedStrategy : strategy))} 
+                                    strategy={strategy} />
+                            ))}
+                            <Button 
+                                variant="outline" 
+                                className="mt-4 w-full" 
+                                onClick={() => onStrategiesChanged([...selectedActor.strategies, { conditions: [], objective: { objectiveType: ObjectiveType.CollectResource, resourceType: ResourceType.Stick } }])}>
+                                Add Strategy
+                            </Button>
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-3">
