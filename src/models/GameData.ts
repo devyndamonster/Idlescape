@@ -10,6 +10,7 @@ import { Actor } from "./entities/Actor";
 import { ActorInteaction, ActorInteractionType } from "@/enums/ActorInteractionType";
 import { getDroppedItemsFromResource } from "@/game/GameLogic";
 import { tryAddItemToInventory } from "@/game/ActorLogic";
+import { CraftingRecipe } from "./CraftingRecipe";
 
 export type Modify<T, R extends Partial<Record<keyof T, any>>> = Omit<T, keyof R> & R;
 
@@ -40,7 +41,7 @@ const harvestResource = (targetResource: Resource, actor: Actor, gameState: Game
     const resourceData = gameData.resourceSettings[targetResource.resourceType];
     const harvestedItems = getDroppedItemsFromResource(targetResource.resourceType, gameData);
     for (const item of harvestedItems) {
-        tryAddItemToInventory(actor, item);
+        tryAddItemToInventory(actor, item, 1);
     }
 
     targetResource.quantityRemaining -= 1;
@@ -323,6 +324,18 @@ const blueprints: Record<BuildableType, BlueprintData> = {
     }
 }
 
+const craftingRecipes: CraftingRecipe[] = [
+    {
+        recipeId: 1,
+        resultItemType: ItemType.ClayCup,
+        resultQuantity: 1,
+        craftingTimeSeconds: 10,
+        requiredItems: [
+            { itemType: ItemType.Clay, quantity: 1 },
+        ]
+    }
+]
+
 export interface GameData {
     worldWidth: number;
     worldHeight: number;
@@ -334,6 +347,7 @@ export interface GameData {
     hungerDamagePerSecond: number;
     thirstDamagePerSecond: number;
     healthRegenerationPerSecond: number;
+    craftingRecipes: CraftingRecipe[];
 }
 
 export const DefaultGameData: GameData = {
@@ -347,5 +361,6 @@ export const DefaultGameData: GameData = {
     hungerDamagePerSecond: 0.1,
     thirstDamagePerSecond: 0.1,
     healthRegenerationPerSecond: 0.1,
+    craftingRecipes: craftingRecipes,
 }
 

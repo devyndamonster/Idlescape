@@ -2,12 +2,14 @@ import { ActionType } from "@/enums/ActionType";
 import { Resource } from "./entities/Resource";
 import { Vector2 } from "three";
 import { InventoryItem } from "./InventoryItem";
+import { CraftingRecipe } from "./CraftingRecipe";
 
 export type ActorAction = 
     IdleAction |    
     MoveAction | 
     CollectAction |
-    InsertItemAction;
+    InsertItemAction |
+    CraftItemAction;
 
 export type IdleAction = {
     actionType: ActionType.Idle;
@@ -30,4 +32,9 @@ export type InsertItemAction = {
     targetUuid: string;
     item: InventoryItem;
     quantity: number;
+}
+
+export type CraftItemAction = {
+    actionType: ActionType.Craft;
+    craftingRecipe: CraftingRecipe;
 }

@@ -8,6 +8,8 @@ import { Input } from "../ui/input";
 import { Card, CardContent } from "../ui/card";
 import { Label } from "../ui/label";
 import { ItemType } from "@/enums/ItemType";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { useGameData } from "@/game/GameContext";
 
 interface Props {
     strategy: ActorStrategy;
@@ -16,6 +18,8 @@ interface Props {
 }
 
 export default function StrategyInput({strategy, onStrategyChanged, onDeleted}: Props) {
+
+    const gameData = useGameData();
 
     const onObjectiveTypeChanged = (objectiveType: ObjectiveType) => {
         switch (objectiveType) {
@@ -33,6 +37,7 @@ export default function StrategyInput({strategy, onStrategyChanged, onDeleted}: 
                     ...strategy,
                     objective: {
                         objectiveType: ObjectiveType.CraftItem,
+                        craftingRecipeId: 1,
                     }
                 });
                 break;
@@ -101,6 +106,7 @@ export default function StrategyInput({strategy, onStrategyChanged, onDeleted}: 
     }
 
     const collectResourceObjective = strategy.objective.objectiveType == ObjectiveType.CollectResource ? strategy.objective : undefined
+    const craftItemObjective = strategy.objective.objectiveType == ObjectiveType.CraftItem ? strategy.objective : undefined
 
     return (
         <div className="grid gap-4">
@@ -191,6 +197,31 @@ export default function StrategyInput({strategy, onStrategyChanged, onDeleted}: 
                         valueName="Resource Type" 
                         className="col-span-3 w-full"
                     />
+                </div>
+            )}
+            {craftItemObjective && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">
+                        Crafting Recipe
+                    </Label>
+                    <Select value={craftItemObjective.craftingRecipeId.toString()} onValueChange={(value) => onStrategyChanged({
+                        ...strategy,
+                        objective: {
+                            ...craftItemObjective,
+                            craftingRecipeId: parseInt(value),
+                        }
+                    })}>
+                        <SelectTrigger className="col-span-3 w-full">
+                            <SelectValue placeholder={`Select a recipe`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {gameData.craftingRecipes.map(recipe => (
+                                <SelectItem key={recipe.recipeId} value={recipe.recipeId.toString()}>
+                                    {ItemType[recipe.resultItemType]}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             )}
             <div className="flex justify-end">

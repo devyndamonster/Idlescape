@@ -10,6 +10,7 @@ export type CollectResourceObjective = {
 
 export type CraftItemObjective = {
     objectiveType: ObjectiveType.CraftItem;
+    craftingRecipeId: number;
 }
 
 export type BuildStructureObjective = {

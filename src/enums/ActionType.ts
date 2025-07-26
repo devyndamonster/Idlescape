@@ -3,4 +3,5 @@ export enum ActionType {
     Move,
     Collect,
     InsertItem,
+    Craft
 }

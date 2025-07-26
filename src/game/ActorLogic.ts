@@ -11,6 +11,7 @@ import { getProvidableItems } from "./BlueprintLogic";
 import { EntityType } from "@/enums/EntityType";
 import { ItemType } from "@/enums/ItemType";
 import { StrategyCondition, StrategyConditionType } from "@/models/ActorStrategy";
+import { GameData } from "@/models/GameData";
 
 export function getNewActor(location: Vector2): Actor {
     return {
@@ -40,7 +41,7 @@ export function getNewActor(location: Vector2): Actor {
     }
 }
 
-export function getActorAction(actor: Actor, gameState: GameState): ActorAction {
+export function getActorAction(actor: Actor, gameState: GameState, gameData: GameData): ActorAction {
     let action: ActorAction = {
         actionType: ActionType.Idle,
     }
@@ -49,6 +50,9 @@ export function getActorAction(actor: Actor, gameState: GameState): ActorAction 
         if(strategy.conditions.every(condition => isStrategyConditionMet(actor, condition))) {
             if(strategy.objective.objectiveType == ObjectiveType.CollectResource){
                 action = tryCollectResource(actor, strategy.objective.resourceType, gameState) ?? action;
+            }
+            else if(strategy.objective.objectiveType == ObjectiveType.CraftItem){
+                action = tryCraftItem(actor, strategy.objective.craftingRecipeId, gameData) ?? action;
             }
             else if(strategy.objective.objectiveType == ObjectiveType.BuildStructure){
                 action = tryBuildStructure(actor, gameState) ?? action;
@@ -94,6 +98,23 @@ function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState:
     }
 }
 
+function tryCraftItem(actor: Actor, recipeId: number, gameData: GameData): ActorAction | null {
+    const recipe = gameData.craftingRecipes.find(r => r.recipeId === recipeId);
+    if(!recipe) return null;
+    
+    for(const requiredItem of recipe.requiredItems) {
+        const availableQuantity = getQuantityAvailableInInventory(actor, requiredItem.itemType);
+        if(availableQuantity < requiredItem.quantity) {
+            return null;
+        }
+    }
+
+    return {
+        actionType: ActionType.Craft,
+        craftingRecipe: recipe,
+    }
+}
+
 function tryBuildStructure(actor: Actor, gameState: GameState): ActorAction | null {
     const buildableBlueprints = getBlueprints(gameState).filter(blueprint => getProvidableItems(blueprint, actor).length)
 
@@ -120,17 +141,17 @@ function tryBuildStructure(actor: Actor, gameState: GameState): ActorAction | nu
     }
 }
 
-export function tryAddItemToInventory(actor: Actor, item: InventoryItem): boolean {
+export function tryAddItemToInventory(actor: Actor, item: InventoryItem, quantity: number): boolean {
     const slotWithItem = actor.inventory.find(slot => slot.item?.itemType === item.itemType);
     if(slotWithItem){
-        slotWithItem.quantity += 1;
+        slotWithItem.quantity += quantity;
         return true;
     }
 
     const emptySlot = actor.inventory.find(slot => slot.item === null);
     if(emptySlot){
         emptySlot.item = item;
-        emptySlot.quantity = 1;
+        emptySlot.quantity = quantity;
         return true;
     }
 
@@ -164,6 +185,13 @@ export function tryGrabItemQuantityFromInventory(actor: Actor, itemType: ItemTyp
     }
 
     return quantity - remainingQuantityToRemove;
+}
+
+export function removeItemQuantityFromInventory(actor: Actor, itemType: ItemType, quantity: number): void {
+    const removedQuantity = tryGrabItemQuantityFromInventory(actor, itemType, quantity);
+    if(removedQuantity < quantity) {
+        throw new Error(`Not enough items in inventory to grab ${quantity}x ${ItemType[itemType]}`);
+    }
 }
 
 export function getQuantityAvailableInInventory(actor: Actor, itemType: ItemType): number {

@@ -3,7 +3,7 @@ import { ResourceType } from "@/enums/ResourceType";
 import { GameData } from "@/models/GameData";
 import { GameState, getActors, getBlueprints, getResources } from "@/models/GameState";
 import { MathUtils, Vector2 } from "three";
-import { getActorAction, getNewActor, tryGrabItemQuantityFromInventory } from "./ActorLogic";
+import { getActorAction, getNewActor, removeItemQuantityFromInventory, tryAddItemToInventory, tryGrabItemQuantityFromInventory } from "./ActorLogic";
 import { InventoryItem } from "@/models/InventoryItem";
 import { getRemainingRequiredItems } from "./BlueprintLogic";
 import { GameUpdate, GameUpdateType } from "./GameContext";
@@ -88,7 +88,7 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
             }
         }
 
-        const action = getActorAction(actor, updatedGameState);
+        const action = getActorAction(actor, updatedGameState, gameData);
         if(action.actionType == ActionType.Collect){
 
             const targetResource = resources.find(r => r.uuid === action.targetResource.uuid);
@@ -158,6 +158,15 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
                     }
                 }
             }
+        }
+        else if(action.actionType == ActionType.Craft){
+            const recipe = action.craftingRecipe;
+
+            for (const requiredItem of recipe.requiredItems) {
+                removeItemQuantityFromInventory(actor, requiredItem.itemType, requiredItem.quantity);
+            }
+
+            tryAddItemToInventory(actor, { itemType: recipe.resultItemType}, recipe.resultQuantity);
         }
     }
 
