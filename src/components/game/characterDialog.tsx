@@ -1,6 +1,5 @@
 import { GameState, getActors } from "@/models/GameState";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Progress } from "../ui/progress";
@@ -9,11 +8,8 @@ import { Actor } from "@/models/entities/Actor";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { ItemType } from "@/enums/ItemType";
 import { ActorStrategy } from "@/models/ActorStrategy";
-import StrategyInput from "./stategyInput";
-import { ObjectiveType } from "@/enums/ObjectiveType";
-import { ResourceType } from "@/enums/ResourceType";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { Card, CardContent } from "../ui/card";
+import StrategyEditorDialog from "./strategyEditorDialog";
 
 interface Props {
     gameState: GameState;
@@ -87,23 +83,7 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
                             <AccordionTrigger>Objectives</AccordionTrigger>
                             <AccordionContent>
                                 <div className="grid gap-4">
-                                    {selectedActor.strategies.map((strategy, index) => (
-                                        <Card className="bg-slate-100">
-                                            <CardContent>
-                                                <StrategyInput 
-                                                    onStrategyChanged={updatedStrategy => onStrategiesChanged(selectedActor.strategies.map((strategy, i) => i === index ? updatedStrategy : strategy))} 
-                                                    onDeleted={() => onStrategiesChanged(selectedActor.strategies.filter((_, i) => i !== index))}
-                                                    strategy={strategy} 
-                                                />
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                    <Button 
-                                        variant="outline" 
-                                        className="mt-4 w-full" 
-                                        onClick={() => onStrategiesChanged([...selectedActor.strategies, { conditions: [], objective: { objectiveType: ObjectiveType.CollectResource, resourceType: ResourceType.Stick } }])}>
-                                        Add Strategy
-                                    </Button>
+                                    <StrategyEditorDialog />
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
