@@ -1,5 +1,6 @@
 import { Actor } from "@/models/entities/Actor";
 import { GameEntity } from "@/models/entities/GameEntity";
+import { ItemType } from "./ItemType";
 
 export enum ActorInteractionType {
     Harvest = 1,
@@ -12,5 +13,6 @@ export type ActorInteaction = {
 
 export type HarvestInteraction = {
     type: ActorInteractionType.Harvest;
-    tool: "none"; //TODO: have a tool type that causes different interactions
+    toolsUsed: ItemType[];
+    itemsProvided: ItemType[];
 }

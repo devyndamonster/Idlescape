@@ -9,8 +9,9 @@ import { Resource } from "./entities/Resource";
 import { Actor } from "./entities/Actor";
 import { ActorInteaction, ActorInteractionType } from "@/enums/ActorInteractionType";
 import { getDroppedItemsFromResource } from "@/game/GameLogic";
-import { tryAddItemToInventory } from "@/game/ActorLogic";
+import { removeItemQuantityFromInventory, tryAddItemToInventory } from "@/game/ActorLogic";
 import { CraftingRecipe } from "./CraftingRecipe";
+import { match } from 'ts-pattern';
 
 export type Modify<T, R extends Partial<Record<keyof T, any>>> = Omit<T, keyof R> & R;
 
@@ -202,7 +203,14 @@ const resourceSettings: Record<ResourceType, ResourceSetting> = {
         drops: [],
         onInteract: (actorInteraction: ResourceInteraction, gameState, gameData, currentTime) => {
             if(actorInteraction.type == ActorInteractionType.Harvest){
-                drinkResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+                match(actorInteraction)
+                    .with({itemsProvided: [ItemType.ClayCup]}, () => {
+                        removeItemQuantityFromInventory(actorInteraction.actor, ItemType.ClayCup, 1);
+                        tryAddItemToInventory(actorInteraction.actor, { itemType: ItemType.FullClayCup }, 1);
+                    })
+                    .otherwise(() => {
+                        drinkResource(actorInteraction.targetEntity, actorInteraction.actor, gameState, gameData, currentTime);
+                    })
             }
         },
         destroyOnDepleted: false,

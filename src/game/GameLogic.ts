@@ -108,7 +108,8 @@ export function getUpdatedGameState(gameState: GameState, gameData: GameData, cu
                         actor: actor,
                         targetEntity: targetResource,
                         type: ActorInteractionType.Harvest,
-                        tool: "none"
+                        toolsUsed: [],
+                        itemsProvided: []
                     }, updatedGameState, gameData, currentTime);
                 }
             }

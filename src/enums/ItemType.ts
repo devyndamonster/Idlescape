@@ -9,4 +9,5 @@ export enum ItemType {
     Blueberry,
     Clay,
     ClayCup,
+    FullClayCup,
 }
