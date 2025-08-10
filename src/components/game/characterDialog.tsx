@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Actor } from "@/models/entities/Actor";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { ItemType } from "@/enums/ItemType";
-import { ActorStrategy } from "@/models/ActorStrategy";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import StrategyEditorDialog from "./strategyEditorDialog";
 
@@ -24,11 +23,6 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
     
     if(selectedActor == undefined){
         return null;
-    }
-
-    const onStrategiesChanged = (strategies: ActorStrategy[]) => {
-        const updatedActor: Actor = {...selectedActor, strategies: strategies};
-        onActorUpdated(updatedActor);
     }
 
     return (

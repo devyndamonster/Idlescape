@@ -1,10 +1,7 @@
-import { Handle, Position } from "@xyflow/react";
+import { OnActorStrategyNodeType } from "@/state/types";
+import { Handle, NodeProps, Position } from "@xyflow/react";
 
-interface Props {
-
-}
-
-export function OnActorStrategyNode({}: Props) {
+export function OnActorStrategyNode({}: NodeProps<OnActorStrategyNodeType>) {
   return (
     <div className="border-2 rounded-sm p-5 bg-white">
       <h2>On Actor Strategy</h2>

@@ -1,26 +1,23 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ItemType } from "@/enums/ItemType";
-import { Handle, Position } from "@xyflow/react";
-import { useState } from "react";
+import { Handle, NodeProps, Position } from "@xyflow/react";
 import EnumSelect from "../enumSelect";
 import { Input } from "@/components/ui/input";
+import { QuantityConditionNodeType } from "@/state/types";
+import useStore from "@/state/store";
 
-interface Props {
+export function QuantityConditionNode({ id, data }: NodeProps<QuantityConditionNodeType>) {
 
-}
+  const updateQuantitySource = useStore((state) => state.updateQuantitySource);
+  const updateItemType = useStore((state) => state.updateItemType);
+  const updateOperator = useStore((state) => state.updateOperator);
 
-export function QuantityConditionNode({ }: Props) {
-
-  const [quantitySource, setQuantitySource] = useState<string>();
-  const [itemType, setItemType] = useState<ItemType>(ItemType.Blueberry);
-  const [operator, setOperator] = useState<string>("=");
-  
-  const isItem = quantitySource === "item";
+  const isItem = data.quantitySource === "item";
 
   return (
     <div className="border-2 rounded-sm p-5 bg-white">
       <div className="flex flex-row gap-2">
-        <Select value={quantitySource} onValueChange={setQuantitySource}>
+        <Select value={data.quantitySource} onValueChange={(quantitySource => updateQuantitySource(id, quantitySource))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Quantity" />
           </SelectTrigger>
@@ -34,13 +31,13 @@ export function QuantityConditionNode({ }: Props) {
         {isItem && (
           <EnumSelect 
             enumObject={ItemType}
-            value={itemType}
-            onChanged={setItemType}
+            value={data.itemType}
+            onChanged={(itemType) => updateItemType(id, itemType)}
             valueName="Item Type"
             className="w-full"
           />
         )}
-        <Select value={operator} onValueChange={setOperator}>
+        <Select value={data.operator} onValueChange={(operator) => updateOperator(id, operator)}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Operator" />
           </SelectTrigger>
