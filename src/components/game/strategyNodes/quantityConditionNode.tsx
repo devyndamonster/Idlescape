@@ -3,7 +3,7 @@ import { ItemType } from "@/enums/ItemType";
 import { Handle, NodeProps, Position } from "@xyflow/react";
 import EnumSelect from "../enumSelect";
 import { Input } from "@/components/ui/input";
-import { QuantityConditionNodeType } from "@/state/types";
+import { Operator, QuantityConditionNodeType, QuantitySource } from "@/state/types";
 import useStore from "@/state/store";
 
 export function QuantityConditionNode({ id, data }: NodeProps<QuantityConditionNodeType>) {
@@ -11,13 +11,14 @@ export function QuantityConditionNode({ id, data }: NodeProps<QuantityConditionN
   const updateQuantitySource = useStore((state) => state.updateQuantitySource);
   const updateItemType = useStore((state) => state.updateItemType);
   const updateOperator = useStore((state) => state.updateOperator);
+  const updateQuantity = useStore((state) => state.updateQuantity);
 
   const isItem = data.quantitySource === "item";
 
   return (
     <div className="border-2 rounded-sm p-5 bg-white">
       <div className="flex flex-row gap-2">
-        <Select value={data.quantitySource} onValueChange={(quantitySource => updateQuantitySource(id, quantitySource))}>
+        <Select value={data.quantitySource} onValueChange={(quantitySource => updateQuantitySource(id, quantitySource as QuantitySource))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Quantity" />
           </SelectTrigger>
@@ -37,7 +38,7 @@ export function QuantityConditionNode({ id, data }: NodeProps<QuantityConditionN
             className="w-full"
           />
         )}
-        <Select value={data.operator} onValueChange={(operator) => updateOperator(id, operator)}>
+        <Select value={data.operator} onValueChange={(operator) => updateOperator(id, operator as Operator)}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Operator" />
           </SelectTrigger>
@@ -50,7 +51,7 @@ export function QuantityConditionNode({ id, data }: NodeProps<QuantityConditionN
             <SelectItem value="!=">!=</SelectItem>
           </SelectContent>
         </Select>
-        <Input type="number"/>
+        <Input type="number" value={data.quantity} onChange={quantity => updateQuantity(id, parseInt(quantity.target.value))}/>
       </div>
 
       <Handle type="target" position={Position.Top} />

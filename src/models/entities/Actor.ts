@@ -1,12 +1,13 @@
 import { EntityType } from "@/enums/EntityType";
 import { InventorySlot } from "../InventorySlot";
 import { RenderableEntity } from "./RenderableEntity";
-import { ActorStrategy } from "../ActorStrategy";
+import { Edge, ReactFlowJsonObject } from "@xyflow/react";
+import { AppNode } from "@/state/types";
 
 export interface Actor extends RenderableEntity {
     entityType: EntityType.Actor;
     inventory: InventorySlot[];
-    strategies: ActorStrategy[];
+    strategy: ReactFlowJsonObject<AppNode, Edge> | undefined;
     moveSpeed: number;
     harvestProgress: number;
     hunger: number;

@@ -10,8 +10,9 @@ import { Vector2 } from "three";
 import { getProvidableItems } from "./BlueprintLogic";
 import { EntityType } from "@/enums/EntityType";
 import { ItemType } from "@/enums/ItemType";
-import { StrategyCondition, StrategyConditionType } from "@/models/ActorStrategy";
 import { GameData } from "@/models/GameData";
+import { AppNode } from "@/state/types";
+import { match } from "ts-pattern";
 
 export function getNewActor(location: Vector2): Actor {
     return {
@@ -27,17 +28,7 @@ export function getNewActor(location: Vector2): Actor {
         maxHealth: 100,
         uuid: crypto.randomUUID(),
         inventory: [...Array(10)].map(_ => ({ item: null, quantity: 0 })),
-        strategies: [{
-            conditions: [{
-                conditionType: StrategyConditionType.ItemQuantityLessThan,
-                itemType: ItemType.Stick,
-                quantity: 5,
-            }],
-            objective: {
-                objectiveType: ObjectiveType.CollectResource,
-                resourceType: ResourceType.Stick,
-            }
-        }]
+        strategy: undefined,
     }
 }
 
@@ -45,38 +36,64 @@ export function getActorAction(actor: Actor, gameState: GameState, gameData: Gam
     let action: ActorAction = {
         actionType: ActionType.Idle,
     }
+    
+    let currentNode: AppNode | undefined = actor.strategy?.nodes.find(node => node.type == "onActorStrategy");
 
-    for(const strategy of actor.strategies) {
-        if(strategy.conditions.every(condition => isStrategyConditionMet(actor, condition))) {
-            if(strategy.objective.objectiveType == ObjectiveType.CollectResource){
-                action = tryCollectResource(actor, strategy.objective.resourceType, gameState) ?? action;
+    while(currentNode){
+        if(currentNode.type == "onActorStrategy"){
+            const nodeId: string = currentNode.id;
+            const nextNodeId = actor.strategy?.edges.find(edge => edge.source === nodeId)?.target;
+            currentNode = actor.strategy?.nodes.find(node => node.id === nextNodeId);
+            continue;
+        }
+        else if(currentNode.type == "endStrategyNode"){
+            const objective = currentNode.data.objective;
+
+            if(objective.objectiveType == ObjectiveType.CollectResource){
+                action = tryCollectResource(actor, objective.resourceType, gameState) ?? action;
             }
-            else if(strategy.objective.objectiveType == ObjectiveType.CraftItem){
-                action = tryCraftItem(actor, strategy.objective.craftingRecipeId, gameData) ?? action;
+            else if(objective.objectiveType == ObjectiveType.CraftItem){
+                action = tryCraftItem(actor, objective.craftingRecipeId, gameData) ?? action;
             }
-            else if(strategy.objective.objectiveType == ObjectiveType.BuildStructure){
+            else if(objective.objectiveType == ObjectiveType.BuildStructure){
                 action = tryBuildStructure(actor, gameState) ?? action;
             }
 
-            return action
+            break;
+        }
+        else if(currentNode.type == "quantityConditionNode"){
+            const nodeId: string = currentNode.id;
+            const nextNodeIdTrue = actor.strategy?.edges.find(edge => edge.source === nodeId && edge.sourceHandle === "condition-true")?.target;
+            const nextNodeIdFalse = actor.strategy?.edges.find(edge => edge.source === nodeId && edge.sourceHandle === "condition-false")?.target;
+
+            const quantitySource = currentNode.data.quantitySource;
+            const operator = currentNode.data.operator;
+            const itemType = currentNode.data.itemType;
+            const targetQuantity = currentNode.data.quantity ?? 0;
+
+            const sourceQuantity = match(quantitySource)
+                .with("hunger", () => actor.hunger * 100)
+                .with("thirst", () => actor.thirst * 100)
+                .with("health", () => (actor.health / actor.maxHealth) * 100)
+                .with("item", () => getQuantityAvailableInInventory(actor, itemType))
+                .otherwise(() => 0);
+
+            const conditionMet = match(operator)
+                .with("=", () => sourceQuantity === targetQuantity)
+                .with(">", () => sourceQuantity > targetQuantity)
+                .with("<", () => sourceQuantity < targetQuantity)
+                .with(">=", () => sourceQuantity >= targetQuantity)
+                .with("<=", () => sourceQuantity <= targetQuantity)
+                .with("!=", () => sourceQuantity != targetQuantity)
+                .otherwise(() => false);
+
+            const nextNodeId = conditionMet ? nextNodeIdTrue : nextNodeIdFalse;
+            currentNode = actor.strategy?.nodes.find(node => node.id === nextNodeId);
+            continue;
         }
     }
 
     return action;
-}
-
-function isStrategyConditionMet(actor: Actor, condition: StrategyCondition): boolean {
-    if(condition.conditionType == StrategyConditionType.HungerLessThan){
-        return actor.hunger < condition.hungerLessThan;
-    }
-    if(condition.conditionType == StrategyConditionType.ThirstLessThan){
-        return actor.thirst < condition.thirstLessThan;
-    }
-    if(condition.conditionType == StrategyConditionType.ItemQuantityLessThan){
-        return getQuantityAvailableInInventory(actor, condition.itemType) < condition.quantity;
-    }
-
-    return false;
 }
 
 function tryCollectResource(actor: Actor, resourceType: ResourceType, gameState: GameState): ActorAction | null {

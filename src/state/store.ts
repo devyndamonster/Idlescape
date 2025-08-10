@@ -85,6 +85,24 @@ const useStore = create<AppState>((set, get) => ({
             }),
         });
     },
+    updateQuantity: (nodeId, quantity) => {
+        set({
+            nodes: get().nodes.map((node) => {
+                if(node.id === nodeId && node.type === "quantityConditionNode") {
+                    const updatedNode: QuantityConditionNodeType = {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            quantity: quantity,
+                        },
+                    };
+                    return updatedNode;
+                }
+
+                return node;
+            }),
+        });
+    },
     updateObjective: (nodeId, objective) => {
         set({
             nodes: get().nodes.map((node) => {

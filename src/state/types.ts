@@ -9,6 +9,10 @@ import {
     type BuiltInNode,
 } from '@xyflow/react';
 
+export type QuantitySource = "item" | "health" | "hunger" | "thirst";
+
+export type Operator = "=" | ">" | "<" | ">=" | "<=" | "!=";
+
 export type OnActorStrategyNodeType = Node<
     {},
     'onActorStrategy'
@@ -16,9 +20,10 @@ export type OnActorStrategyNodeType = Node<
 
 export type QuantityConditionNodeType = Node<
     {
-        quantitySource?: string;
+        quantitySource?: QuantitySource;
         itemType: ItemType;
-        operator: string;
+        operator: Operator;
+        quantity?: number;
     },
     'quantityConditionNode'
 >;
@@ -41,8 +46,9 @@ export type AppState = {
     setNodes: (nodes: AppNode[]) => void;
     setEdges: (edges: Edge[]) => void;
     addNode: (node: AppNode) => void;
-    updateQuantitySource: (nodeId: string, quantitySource: string) => void;
+    updateQuantitySource: (nodeId: string, quantitySource: QuantitySource) => void;
     updateItemType: (nodeId: string, itemType: ItemType) => void;
-    updateOperator: (nodeId: string, operator: string) => void;
+    updateOperator: (nodeId: string, operator: Operator) => void;
+    updateQuantity: (nodeId: string, quantity: number) => void;
     updateObjective: (nodeId: string, objective: Objective) => void;
 };

@@ -3,22 +3,14 @@ import { Button } from "../ui/button";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import {
     ReactFlow,
-    addEdge,
-    applyNodeChanges,
-    applyEdgeChanges,
-    type Node,
     type Edge,
     type FitViewOptions,
-    type OnConnect,
-    type OnNodesChange,
-    type OnEdgesChange,
     type DefaultEdgeOptions,
     Background,
     BackgroundVariant,
     useViewport,
     ReactFlowProvider,
     ReactFlowInstance,
-    ReactFlowJsonObject,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { OnActorStrategyNode } from "./strategyNodes/onActorStrategyNode";
@@ -29,12 +21,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { AppNode, AppState, EndStrategyNodeType, QuantityConditionNodeType } from "@/state/types";
 import { ItemType } from "@/enums/ItemType";
 import { ObjectiveType } from "@/enums/ObjectiveType";
-
-const initialNodes: Node[] = [
-    { id: '1', type: "onActorStrategy", data: { label: 'Node 1' }, position: { x: 5, y: 5 } },
-];
-
-const initialEdges: Edge[] = [];
+import { Actor } from "@/models/entities/Actor";
 
 const fitViewOptions: FitViewOptions = {
     padding: 0.2,
@@ -61,7 +48,12 @@ const selector = (state: AppState) => ({
     setEdges: state.setEdges,
 });
 
-function StrategyContent() {
+interface Props {
+    actor: Actor;
+    onActorUpdated: (actor: Actor) => void;
+}
+
+function StrategyContent({actor, onActorUpdated }: Props) {
     const { nodes, edges, onNodesChange, onEdgesChange, onConnect, addNode, setNodes, setEdges } = useStore(
         useShallow(selector),
     );
@@ -94,16 +86,18 @@ function StrategyContent() {
     const onSave = useCallback(() => {
         if (rfInstance) {
             const flow = rfInstance.toObject();
-            localStorage.setItem("react-flow-save", JSON.stringify(flow));
+            onActorUpdated({
+                ...actor,
+                strategy: flow
+            });
         }
     }, [rfInstance]);
 
     useEffect(() => {
-        const savedFlow = localStorage.getItem("react-flow-save");
+        const savedFlow = actor.strategy
         if (savedFlow) {
-            const parsedFlow: ReactFlowJsonObject<AppNode, Edge> = JSON.parse(savedFlow);
-            setNodes(parsedFlow.nodes);
-            setEdges(parsedFlow.edges);
+            setNodes(savedFlow.nodes);
+            setEdges(savedFlow.edges);
         }
     }, [])
 
@@ -140,7 +134,7 @@ function StrategyContent() {
     )
 }
 
-export default function StrategyEditorDialog() {
+export default function StrategyEditorDialog({actor, onActorUpdated}: Props) {
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -153,7 +147,7 @@ export default function StrategyEditorDialog() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[1200px] p-3">
                 <ReactFlowProvider>
-                    <StrategyContent />
+                    <StrategyContent actor={actor} onActorUpdated={onActorUpdated} />
                 </ReactFlowProvider>
             </DialogContent>
         </Dialog>

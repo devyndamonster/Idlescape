@@ -77,7 +77,7 @@ export default function CharacterDialog({gameState, selectedActorUuid, onClose, 
                             <AccordionTrigger>Objectives</AccordionTrigger>
                             <AccordionContent>
                                 <div className="grid gap-4">
-                                    <StrategyEditorDialog />
+                                    <StrategyEditorDialog actor={selectedActor} onActorUpdated={onActorUpdated} />
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
